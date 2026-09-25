@@ -77,7 +77,7 @@ Descrição: Como usuário convidado, quero entrar em um clube por meio do link 
 
 **Critérios de aceitação:**
 
-* Ao acessar um link válido, usuário vê informações básicas do clube antes de confirmar a entrada.  
+* Ao acessar um link válido, o usuário vê informações básicas do clube antes de confirmar a entrada.  
 * Usuário é adicionado como membro após confirmação.  
 * O sistema impede que o mesmo usuário entre duas vezes no mesmo clube.  
 * Se não estiver logado, o sistema solicita login/cadastro antes de processar o convite.
@@ -119,7 +119,7 @@ Descrição: Como usuário, quero poder sair de um clube do qual participo.
 
 **US09 — Sugerir livro (democrático)**
 
-Descrição: Como membro de um clube democrático, quero sugerir um livro para o catálogo, para que ele seja considerado como próxima leitura.
+Descrição: Como membro de um clube democrático, quero sugerir um livro para o catálogo, para que ele seja considerado como a próxima leitura.
 
 **Critérios de aceitação:**
 
@@ -157,7 +157,7 @@ Descrição: Como membro de um clube democrático com votação ativada, quero v
 **Critérios de aceitação:**
 
 * Cada membro vota em apenas um livro sugerido por rodada de votação.  
-* Sistema impede que um membro vote mais de uma vez na mesma rodada.  
+* O sistema impede que um membro vote mais de uma vez na mesma rodada.  
 * Livro com mais votos ao final da rodada se torna automaticamente o livro atual ("lendo").  
 * Em caso de empate, o sistema aplica uma regra de desempate definida (ex: sorteio entre os empatados).
 
@@ -189,7 +189,7 @@ Descrição: Como membro, quero ver os livros do catálogo separados por status 
 
 **Critérios de aceitação:**
 
-* Tela do catálogo exibe os livros agrupados/filtrados por status.  
+* A tela do catálogo exibe os livros agrupados/filtrados por status.  
 * Existe no máximo um livro com status "lendo" em destaque.  
 * Livros "já lidos" ficam acessíveis em uma seção separada.  
 * Mudança de status de um livro reflete automaticamente na visualização.
@@ -247,7 +247,7 @@ Descrição: Como membro, quero que, ao finalizar uma leitura (atingir 100% de p
 
 **Critérios de aceitação:**
 
-* Sistema calcula automaticamente que o usuário terminou o livro quando chega em 100% das páginas lidas.   
+* O sistema calcula automaticamente que o usuário terminou o livro quando chega em 100% das páginas lidas.   
 * O membro que termina o livro tem seu nome/avatar destacado com cor diferente na lista de membros/feed.  
 * Marcação vale apenas para o livro atual; ao trocar de livro, o destaque é reiniciado para todos.  
 * É possível identificar, num único lugar (ranking do clube), quais membros já terminaram o livro atual e qual o progresso dos outros membros também. 
@@ -296,7 +296,7 @@ Descrição: Como usuário, quero que meu clube seja visível apenas para seus m
 * Usuários não-membros não conseguem acessar feed, catálogo ou lista de membros do clube.  
 * Acesso não autorizado resulta em mensagem de acesso negado ou redirecionamento.  
 * Apenas convite/link permite a um novo usuário visualizar o conteúdo (após entrar).  
-* Clube não aparece em nenhuma busca/listagem pública do sistema.
+* O Clube não aparece em nenhuma busca/listagem pública do sistema.
 
 ### **Comentários e reações em check-ins**
 
@@ -307,7 +307,7 @@ Descrição: Como membro, quero comentar no check-in de outro membro do meu club
 **Critérios de aceitação:**
 
 * Apenas membros do mesmo clube podem comentar em um check-in.  
-* O comentário respeita um limite máximo de caracteres (menor que um tweet).  
+* O comentário respeitará	 um limite máximo de caracteres (menor que um tweet).  
 * O comentário publicado aparece imediatamente associado ao check-in, com autor e data/hora.  
 * É possível haver múltiplos comentários de diferentes membros no mesmo check-in.
 
