@@ -8,7 +8,7 @@
 class User;
 class CheckIn;
 class Book;
-class Coments;
+class Comment;
 
 class BookClub {
     private:
