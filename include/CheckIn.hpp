@@ -1,4 +1,7 @@
-
+/**
+ * @file Checkin.hpp
+ * @brief declara a classe Checkin
+ */
 #ifndef CHECKIN_H
 #define CHECKIN_H
 
@@ -16,6 +19,14 @@ class BookClub;
 class Coments;
 class Book;
 
+/**
+ * @brief Representa um check-in em um clube do livro
+ *
+ * Armazena os dados do check-in (texto, quem realizou, livro comentado,
+ * clube do livro relacionado e data e hora da postagem)
+ * recebe comentários
+ * e atualiaza a porcetagem lida (atualizando o número de paginas).
+ */
 class CheckIn {
 private:
     string text;
