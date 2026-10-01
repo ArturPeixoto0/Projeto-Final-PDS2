@@ -2,8 +2,8 @@
  * @file Comment.hpp
  * @brief Declaração da classe Comment.
  */
-#ifndef COMENTS_H
-#define COMENTS_H
+#ifndef COMMENT_H
+#define COMMENT_H
 
 #include <ctime>
 #include <string>
