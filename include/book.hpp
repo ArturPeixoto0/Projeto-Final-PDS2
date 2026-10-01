@@ -9,7 +9,7 @@ class Book {
         std::string author;
         std::string genre;
         int pages;
-        int ISBN;
+        std::string ISBN;
         double grade;
         int number_of_readers;
         int number_of_clubs;
@@ -35,8 +35,8 @@ class Book {
         void setPages(int pages);
         int getPages();
 
-        void setISBN(int ISBN);
-        int getISBN();
+        void setISBN(std::string ISBN);
+        std::string getISBN();
 
         void setGrade(double grade);
         double getGrade();
