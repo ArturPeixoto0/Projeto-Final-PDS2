@@ -1,6 +1,9 @@
+/**
+ * @file UserProfile.hpp
+ * @brief Declaração da classe UserProfile.
+ */
 #ifndef USERPROFILE_H
 #define USERPROFILE_H
-
 
 #include <string>
 #include <vector>
@@ -8,6 +11,12 @@
 class User;   // forward declaration
 class BookClub;
 
+/**
+ * @brief Representa o perfil público de um usúario.
+ *
+ * Exibe as informações do usúario para outros usuários: nome, descrição,
+ * foto, leituras atuais, feed de check ins e métricas de leitura.
+ */
 class UserProfile {
 private:
     User* user;   // de quem é este perfil
