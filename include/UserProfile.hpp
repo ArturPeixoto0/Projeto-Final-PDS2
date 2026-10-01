@@ -1,33 +1,35 @@
-#ifndef PROFILE_H
-#define PROFILE_H
+#ifndef USERPROFILE_H
+#define USERPROFILE_H
 
 
 #include <string>
 #include <vector>
-#include "bookClub.hpp"
 
 class User;   // forward declaration
+class BookClub;
 
-class Profile {
+class userProfile {
 private:
     User* user;   // de quem é este perfil
 
 public:
-    Profile(User* user);
+    userProfile(User* user);
 
-    std::string getName();
-    std::string getDescription();
-    std::string getPhotoPath();
-    std::string getHeaderPath();
+    std::string getName()const;
+    std::string getDescription()const;
+    std::string getPhotoPath()const;
+    std::string getHeaderPath()const;
 
-    int getTotalPages();
-    int getTotalBooks();
+    int getTotalPages()const;
+    int getTotalBooks()const;
     
-    vector<BookClub*> getPublicClubs();
+    std::vector<BookClub*> getPublicClubs();
 
-    void show_name();
-    void show_pfp();
-    void show_description();
-    void show_checkins();
+    void show_name()const;
+    void show_pfp()const;
+    void show_description()const;
+    void show_checkins()const;
 
 };
+
+#endif
