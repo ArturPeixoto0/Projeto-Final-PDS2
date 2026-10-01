@@ -1,3 +1,7 @@
+/**
+ * @file user.hpp
+ * @brief Declaração da classe User.
+ */
 #ifndef USER_H 
 #define USER_H
 
@@ -10,6 +14,14 @@ class CheckIn;
 class Coments;
 class Book;
 
+/**
+ * @brief Representa um usuário do sistema.
+ *
+ * Armazena os dados da conta (nome, email e senha), os clubes em que
+ * participa, o histórico de check ins e as métricas pessoais de leitura.
+ * Oferece as ações que o usuário pode realizar: criar e entrar em clubes,
+ * fazer check ins, comentar e avaliar leituras.
+ */
 class User {
     private:
 
