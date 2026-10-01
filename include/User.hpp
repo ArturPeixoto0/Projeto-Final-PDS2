@@ -12,19 +12,6 @@ class Book;
 
 class User {
     private:
-<<<<<<< HEAD
-        std::string name;
-        std::string email;
-        std::string password;
-        std::vector<BookClub*> CurrentPublicClubs;
-        std::vector<BookClub*> CurrentPrivateClubs;
-        std::vector<CheckIn*> AllCheckIn;
-        int TotalPages;
-        int TotalBooks;
-
-        userProfile profile; 
-        //RESOLVER O PROBLEMA DAS PÁGINAS ATUAIS DO LIVRO PARA CADA USUÁRIO -> CRIAR SUBCLASSE Reading em Book?
-=======
         std::string name; //nome do User
         std::string email; //email da conta do User
         std::string password; //senha da conta do User
@@ -33,7 +20,6 @@ class User {
         int TotalPages; //paginômetro total do usuário
         int TotalBooks; //livrômetro total do usuário
         UserProfile profile; //perfil do User
->>>>>>> 3a84ec69c12531189b3390d42b6605cde11c5f46
 
     public:
         User();
