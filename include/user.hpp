@@ -19,7 +19,8 @@ class User {
         std::vector<CheckIn*> AllCheckIn;
         int TotalPages;
         int TotalBooks;
-        //UserProfile profile; 
+
+        UserProfile profile; 
         //RESOLVER O PROBLEMA DAS PÁGINAS ATUAIS DO LIVRO PARA CADA USUÁRIO -> CRIAR SUBCLASSE Reading em Book?
 
     public:
@@ -35,7 +36,7 @@ class User {
         bool checkPassword(const std::string& attempt) const;
 
 
-        //UserProfile& getprofile();
+        UserProfile& getprofile();
 
         std::vector<BookClub*> getCurrentClubs() const;
         bool participaDe(const BookClub* club) const;
