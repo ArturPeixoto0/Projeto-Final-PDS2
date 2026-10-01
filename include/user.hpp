@@ -3,9 +3,7 @@
 
 #include <string>
 #include <vector>
-#include "bookClub.hpp"
-#include "CheckIn.hpp"
-#include "Coments.hpp"
+#include "UserProfile.hpp"
 
 class BookClub;
 class CheckIn;
@@ -42,7 +40,7 @@ class User {
         std::vector<BookClub*> getCurrentClubs() const;
         bool participaDe(const BookClub* club) const;
 
-        std::vector<CheckIn*> getAllCheckIsn() const;
+        std::vector<CheckIn*> getAllCheckIns() const;
         int getCurrentPage(const BookClub* club) const;
 
         int getTotalPages() const;
@@ -50,18 +48,18 @@ class User {
         int getTotalBooks() const;
         void setTotalBooks(int quantity); 
         
-        BookClub CriarClube(const std::string& clubName);
+        BookClub* CriarClube(const std::string& clubName);
 
         bool EntrarClube(BookClub* Club);
-        bool SairClube(BookClub Club);
+        bool SairClube(BookClub* Club);
 
-        CheckIn RealizarCheckIn(BookClub* club, int page, const std::string& text, 
+        CheckIn* RealizarCheckIn(BookClub* club, int page, const std::string& text, 
                                 bool finished = false);
 
         bool ApagarCheckIn(CheckIn* checkIn);
 
         Coments* Comentar(CheckIn* chekIn, const std:: string& text);
-        std::vector<Book*> AdicionarLista(std::vector<Book*> Lista, Book AddBook);
+    
 
         bool SugerirLivro(BookClub* club, Book* book); //depednde do clube
         void AvaliarLeitura (BookClub* club, Book* book, double nota);
