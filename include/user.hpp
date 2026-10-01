@@ -7,6 +7,11 @@
 #include "CheckIn.hpp"
 #include "Coments.hpp"
 
+class BookClub;
+class CheckIn;
+class Coments;
+class Book;
+
 class User {
     private:
         std::string name;
@@ -16,39 +21,50 @@ class User {
         std::vector<CheckIn*> AllCheckIn;
         int TotalPages;
         int TotalBooks;
-
+        //UserProfile profile; 
         //RESOLVER O PROBLEMA DAS PÁGINAS ATUAIS DO LIVRO PARA CADA USUÁRIO -> CRIAR SUBCLASSE Reading em Book?
 
     public:
         User();
-        User(
-        std::string name,
-        std::string email,
-        std::string password
-        );
+        User(const std::string& name,
+            const std::string& email,
+            const std::string& password);
+        ~User();
 
-        std::string getName();
-        void setName(std::string Name);
-        std::string getEmail();
-        std::string getPassword();
-        std::vector<BookClub*> getCurrentClubs();
+        std::string getName() const;
+        void setName(const std::string& name);
+        std::string getEmail() const;
+        bool checkPassword(const std::string& attempt) const;
 
-        std::vector<CheckIn*> AllCheckIn();
 
-        int getTotalPages();
-        void setTotalPages(int Npages);
-        int getTotalBooks();
-        void setTotalBooks(int quantity);
+        //UserProfile& getprofile();
+
+        std::vector<BookClub*> getCurrentClubs() const;
+        bool participaDe(const BookClub* club) const;
+
+        std::vector<CheckIn*> getAllCheckIsn() const;
+        int getCurrentPage(const BookClub* club) const;
+
+        int getTotalPages() const;
+        void setTotalPages(int Npages); //paginômetro total do usuário?
+        int getTotalBooks() const;
+        void setTotalBooks(int quantity); 
         
-        BookClub CriarClube();
-        std::vector<BookClub*> EntrarClube(BookClub Club);
-        std::vector<BookClub*> SairClube(BookClub Club);
+        BookClub CriarClube(const std::string& clubName);
 
-        CheckIn RealizarCheckIn(int pages, BookClub& Club);
-        Coments Comentar(std:: string text);
+        bool EntrarClube(BookClub* Club);
+        bool SairClube(BookClub Club);
+
+        CheckIn RealizarCheckIn(BookClub* club, int page, const std::string& text, 
+                                bool finished = false);
+
+        bool ApagarCheckIn(CheckIn* checkIn);
+
+        Coments* Comentar(CheckIn* chekIn, const std:: string& text);
         std::vector<Book*> AdicionarLista(std::vector<Book*> Lista, Book AddBook);
 
-        void AvaliarLeitura (Book Book);
+        bool SugerirLivro(BookClub* club, Book* book); //depednde do clube
+        void AvaliarLeitura (BookClub* club, Book* book, double nota);
 };
 
 #endif
