@@ -11,8 +11,6 @@
 #include <chrono>
 #include <set>
 
-using namespace std;
-
 class User;
 //class AdminClub;
 class BookClub;
@@ -29,13 +27,13 @@ class Book;
  */
 class CheckIn {
 private:
-    string text;
+    std::string text;
 
     User* user;
     Book* book;
     BookClub* club;
 
-    vector<Coments*> coments;
+    std::vector<Coments*> coments;
 
     void setPages (int pages); 
 
@@ -46,10 +44,10 @@ public:
     CheckIn();
     ~CheckIn();
 
-    string getText();
-    string getComents();
-    string getPages();
-    string getDataHora();
+    std::string getText();
+    std::string getComents();
+    int getPages();
+    std::string getDataHora();
 
 };
 
