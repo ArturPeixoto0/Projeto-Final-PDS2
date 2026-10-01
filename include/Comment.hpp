@@ -1,3 +1,7 @@
+/**
+ * @file Comment.hpp
+ * @brief Declaração da classe Comment.
+ */
 #ifndef COMENTS_H
 #define COMENTS_H
 
@@ -7,6 +11,12 @@
 class User;
 class BookClub;
 class CheckIn;
+/**
+ * @brief Representa o comentário feito em check in.
+ *
+ * Armazena os dados do comentário (autor do comentário, clube do livro,
+  check in onde foi realizado, texto, data e hora)
+ */
 class Comment {
     private:
         User* _author;
