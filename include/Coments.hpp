@@ -6,6 +6,21 @@
 
 
 class Coments {
+    private:
+        User* _author;
+        BookClub* _club;
+        CheckIn* _checkin;
+        std::string _text;
+        std::time_t _created_at;
+
+    public:
+        Comment(std::string text, User* author, CheckIn* checkIn, BookClub* club);
+
+        std::string get_text();
+        User* get_author() const;
+        CheckIn* get_checkin() const;
+        BookClub* get_club() const;
+        std::time_t get_createdat() const;
 
 };
 
