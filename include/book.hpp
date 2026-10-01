@@ -41,32 +41,32 @@ class Book {
         std::string author,
         std::string genre,
         int pages,
-        int ISBN
+        std::string ISBN
         ); 
 
         void setTitle(std::string title);
-        std:: string getTitle();
+        std::string getTitle() const;
 
         void setAuthor(std::string author);
-        std:: string getAuthor();
+        std::string getAuthor() const;
 
         void setGenre(std::string genre);
-        std:: string getGenre();
+        std::string getGenre() const;
 
         void setPages(int pages);
-        int getPages();
+        int getPages() const;
 
         void setISBN(std::string ISBN);
-        std::string getISBN();
+        std::string getISBN() const;
 
         void setGrade(double grade);
-        double getGrade();
+        double getGrade() const;
 
         void setNumberReaders(int number_of_readers);
-        int getNumberReaders();
+        int getNumberReaders() const;
 
         void setNumberClubs(int number_of_clubs);
-        int getNumberClubs();
+        int getNumberClubs() const;
         
         ~Book();
 
