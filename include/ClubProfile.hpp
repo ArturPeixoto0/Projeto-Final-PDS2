@@ -1,3 +1,7 @@
+/**
+ * @file ClubProfile.hpp
+ * @brief Declaração da classe ClubProfile.
+ */
 #ifndef CLUBPROFILE_H
 #define CLUBPROFILE_H
 
@@ -6,6 +10,12 @@
 
 class BookClub;
 
+/**
+ * @brief Representa o perfil público de um clube do livro.
+ *
+ * Exibe as informações do clube para outros usuários: nome, descrição,
+ * foto, membros, leitura atual, feed de check ins e métricas de leitura.
+ */
 class ClubProfile {
 private:
     BookClub* club;   // club dono do perfil
