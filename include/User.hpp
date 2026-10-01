@@ -12,7 +12,10 @@ class Book;
 
 class User {
     private:
+<<<<<<< HEAD
 
+=======
+>>>>>>> ae0df8de8e940b029fd13b7f125276dffd06f659
         std::string name; //nome do User
         std::string email; //email da conta do User
         std::string password; //senha da conta do User
