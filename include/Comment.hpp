@@ -4,8 +4,10 @@
 #include <ctime>
 #include <string>
 
-
-class Coments {
+class User;
+class BookClub;
+class CheckIn;
+class Comment {
     private:
         User* _author;
         BookClub* _club;
