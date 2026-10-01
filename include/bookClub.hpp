@@ -58,14 +58,14 @@ class BookClub {
         Book* CurrentReading
         );
 
-        std:: string getName();
-        Book* getCurrentReading();
-        std:: vector<Book*> getFutureReading();
-        std:: vector<Book*> getPastReadings();
-        std:: vector<CheckIn*> getFeed();
-        int getReadPages();
-        int getReadBooks();
-        bool getReading();
+        std:: string getName() const;
+        Book* getCurrentReading()  const;
+        std:: vector<Book*> getFutureReading() const;
+        std:: vector<Book*> getPastReadings() const;
+        std:: vector<CheckIn*> getFeed() const;
+        int getReadPages() const;
+        int getReadBooks() const;
+        bool getReading() const;
 
         double MediaPaginasPorUser();
         double MediaPaginasPorDia();
@@ -76,7 +76,7 @@ class BookClub {
 
         //MÉTODOS DO ADMINISTRADOR ///<MÉTODOS DO ADMINISTRADOR
 
-        bool isAdmin(User* user);
+        bool isAdmin(User* user) const;
 
         bool criarConvite(User* actor, User* convidado);
         bool removerMembro(User* actor, User* alvo);
