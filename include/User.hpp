@@ -12,16 +12,14 @@ class Book;
 
 class User {
     private:
-        std::string name;
-        std::string email;
-        std::string password;
-        std::vector<BookClub*> CurrentClubs;
-        std::vector<CheckIn*> AllCheckIn;
-        int TotalPages;
-        int TotalBooks;
-
-        UserProfile profile; 
-        //RESOLVER O PROBLEMA DAS PÁGINAS ATUAIS DO LIVRO PARA CADA USUÁRIO -> CRIAR SUBCLASSE Reading em Book?
+        std::string name; //nome do User
+        std::string email; //email da conta do User
+        std::string password; //senha da conta do User
+        std::vector<BookClub*> CurrentClubs; //vetor com todos os clubes atuais do User
+        std::vector<CheckIn*> AllCheckIn; //vetor qcom todos os check-ins já feitos pelo User
+        int TotalPages; //paginômetro total do usuário
+        int TotalBooks; //livrômetro total do usuário
+        UserProfile profile; //perfil do User
 
     public:
         User();
@@ -45,7 +43,7 @@ class User {
         int getCurrentPage(const BookClub* club) const;
 
         int getTotalPages() const;
-        void setTotalPages(int Npages); //paginômetro total do usuário?
+        void setTotalPages(int Npages); 
         int getTotalBooks() const;
         void setTotalBooks(int quantity); 
         
@@ -57,12 +55,12 @@ class User {
         CheckIn* RealizarCheckIn(BookClub* club, int page, const std::string& text, 
                                 bool finished = false);
 
-        bool ApagarCheckIn(CheckIn* checkIn);
+        bool ApagarSelfCheckIn(CheckIn* checkIn);
 
         Coments* Comentar(CheckIn* chekIn, const std:: string& text);
     
 
-        bool SugerirLivro(BookClub* club, Book* book); //depednde do clube
+        bool SugerirLivro(BookClub* club, Book* book); 
         void AvaliarLeitura (BookClub* club, Book* book, double nota);
 };
 
