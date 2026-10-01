@@ -1,18 +1,15 @@
 /**
- * @file Checkin.hpp
- * @brief declara a classe Checkin
+ * @file CheckIn.hpp
+ * @brief declara a classe CheckIn
  */
 #ifndef CHECKIN_H
 #define CHECKIN_H
 
 #include <string>
 #include <vector>
-#include <map>
 #include <chrono>
-#include <set>
 
 class User;
-//class AdminClub;
 class BookClub;
 class Coments;
 class Book;
@@ -37,17 +34,17 @@ private:
 
     void setPages (int pages); 
 
-    chrono::system_clock::time_point dataHora;
+    std::time_t dataHora;
 
 public:
 
     CheckIn();
     ~CheckIn();
 
-    std::string getText();
-    std::string getComents();
-    int getPages();
-    std::string getDataHora();
+    std::string getText()const;
+    std::string getComents()const;
+    int getPages()const;
+    std::string getDataHora()const;
 
 };
 

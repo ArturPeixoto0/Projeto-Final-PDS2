@@ -25,13 +25,13 @@ class Comment;
  */
 class BookClub {
     private:
-        std:: string name;
+        std::string name;
         Book* CurrentReading;
-        std:: vector<User*> Admins;
-        std:: vector<User*> CurrentUsers;
-        std:: vector<Book*> FutureReading;
-        std:: vector<Book*> PastReadings;
-        std:: vector<CheckIn*> Feed;
+        std::vector<User*> Admins;
+        std::vector<User*> CurrentUsers;
+        std::vector<Book*> FutureReading;
+        std::vector<Book*> PastReadings;
+        std::vector<CheckIn*> Feed;
         int ReadPages;
         int ReadBooks;
         bool Reading;
@@ -54,15 +54,15 @@ class BookClub {
          */
         BookClub(
         User* founder, //Ele vai estar na lista de admins desde o início
-        std:: string name,
+        std::string name,
         Book* CurrentReading
         );
 
-        std:: string getName() const;
+        std::string getName() const;
         Book* getCurrentReading()  const;
-        std:: vector<Book*> getFutureReading() const;
-        std:: vector<Book*> getPastReadings() const;
-        std:: vector<CheckIn*> getFeed() const;
+        std::vector<Book*> getFutureReading() const;
+        std::vector<Book*> getPastReadings() const;
+        std::vector<CheckIn*> getFeed() const;
         int getReadPages() const;
         int getReadBooks() const;
         bool getReading() const;
@@ -74,7 +74,7 @@ class BookClub {
 
         int DiasRestantesLeitura();
 
-        //MÉTODOS DO ADMINISTRADOR ///<MÉTODOS DO ADMINISTRADOR
+        //MÉTODOS DO ADMINISTRADOR
 
         bool isAdmin(User* user) const;
 
