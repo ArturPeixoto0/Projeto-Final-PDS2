@@ -1,5 +1,5 @@
-#ifndef PROFILE_H
-#define PROFILE_H
+#ifndef USERPROFILE_H
+#define USERPROFILE_H
 
 
 #include <string>
