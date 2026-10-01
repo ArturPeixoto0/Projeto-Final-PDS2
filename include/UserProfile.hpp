@@ -8,12 +8,12 @@
 class User;   // forward declaration
 class BookClub;
 
-class userProfile {
+class UserProfile {
 private:
     User* user;   // de quem é este perfil
 
 public:
-    userProfile(User* user);
+    UserProfile(User* user);
 
     std::string getName()const;
     std::string getDescription()const;
