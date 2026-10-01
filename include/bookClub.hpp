@@ -1,3 +1,7 @@
+/**
+ * @file bookClub.hpp
+ * @brief declara a classe bookClub
+ */
 #ifndef BOOKCLUB_H
 #define BOOKCLUB_H
 
@@ -10,6 +14,15 @@ class CheckIn;
 class Book;
 class Comment;
 
+/**
+ * @brief Representa um clube do livro onde usúarios acompanham uma leitura juntos
+ *
+ * Armazena os dados do clube (nome, administradores, membros,
+ * leituras passadas e futuras, feed de check ins e data de criação),
+ * as métricas de leitura (páginas lidas, livros lidos e tempo de leitura),
+ * indica se o clube é privado ou público
+ * e regula as ações de administrador do clube.
+ */
 class BookClub {
     private:
         std:: string name;
@@ -31,6 +44,14 @@ class BookClub {
 
 
     public: 
+        /**
+         * @brief Cria umm clube do livro.
+         * @param fouder Usuário cria o clube e é adicionado automaticamente
+           como administrador.
+         * @param name Nome do clube.
+         * @param CurrentReading Livro a ser lido. Inicialmente pode ser null caso
+           o ponteiro ainda não esteja definido.
+         */
         BookClub(
         User* founder, //Ele vai estar na lista de admins desde o início
         std:: string name,
@@ -53,7 +74,7 @@ class BookClub {
 
         int DiasRestantesLeitura();
 
-        //MÉTODOS DO ADMINISTRADOR
+        //MÉTODOS DO ADMINISTRADOR ///<MÉTODOS DO ADMINISTRADOR
 
         bool isAdmin(User* user);
 
