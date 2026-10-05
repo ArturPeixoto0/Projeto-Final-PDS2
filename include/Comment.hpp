@@ -15,7 +15,7 @@ class CheckIn;
  * @brief Representa o comentário feito em check in.
  *
  * Armazena os dados do comentário (autor do comentário, clube do livro,
-  check in onde foi realizado, texto, data e hora)
+ * check in onde foi realizado, texto, data e hora)
  */
 class Comment {
     private:
@@ -28,7 +28,7 @@ class Comment {
     public:
         Comment(std::string text, User* author, CheckIn* checkIn, BookClub* club);
 
-        std::string get_text();
+        std::string get_text() const;
         User* get_author() const;
         CheckIn* get_checkin() const;
         BookClub* get_club() const;
