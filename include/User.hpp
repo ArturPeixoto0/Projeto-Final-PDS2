@@ -11,7 +11,7 @@
 
 class BookClub;
 class CheckIn;
-class Coments;
+class Comment;
 class Book;
 
 /**
@@ -70,7 +70,7 @@ class User {
 
         bool ApagarSelfCheckIn(CheckIn* checkIn);
 
-        Coments* Comentar(CheckIn* chekIn, const std:: string& text);
+        Comment* Comentar(CheckIn* chekIn, const std:: string& text);
     
 
         bool SugerirLivro(BookClub* club, Book* book); 
