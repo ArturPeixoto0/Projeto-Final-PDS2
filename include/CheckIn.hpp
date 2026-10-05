@@ -11,7 +11,7 @@
 
 class User;
 class BookClub;
-class Coments;
+class Comment;
 class Book;
 
 /**
@@ -30,7 +30,7 @@ private:
     Book* book;
     BookClub* club;
 
-    std::vector<Coments*> coments;
+    std::vector<Comment*> coments;
 
     void setPages (int pages); 
 
