@@ -22,6 +22,8 @@ class Book {
         int pages;
         std::string ISBN;
         double grade;
+        double grade_sum;      
+        int grade_count;      
         int number_of_readers;
         int number_of_clubs;
 
@@ -44,28 +46,30 @@ class Book {
         std::string ISBN
         ); 
 
-        void setTitle(std::string title);
+        void setTitle(const std::string title);
         std::string getTitle() const;
 
-        void setAuthor(std::string author);
+        void setAuthor(const std::string author);
         std::string getAuthor() const;
 
-        void setGenre(std::string genre);
+        void setGenre(const std::string genre);
         std::string getGenre() const;
 
         void setPages(int pages);
         int getPages() const;
 
-        void setISBN(std::string ISBN);
+        void setISBN(const std::string ISBN);
         std::string getISBN() const;
 
-        void setGrade(double grade);
+        void addGrade(double grade);
         double getGrade() const;
 
-        void setNumberReaders(int number_of_readers);
+        void incrementReaders(int number_of_readers);
+        void decrementReaders(int number_of_readers);
         int getNumberReaders() const;
 
-        void setNumberClubs(int number_of_clubs);
+        void incrementClubs(int number_of_clubs);
+        void decrementClubs(int number_of_clubs);
         int getNumberClubs() const;
         
         ~Book();
