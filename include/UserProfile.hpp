@@ -7,9 +7,11 @@
 
 #include <string>
 #include <vector>
+#include "Profile.hpp"
 
-class User;   // forward declaration
+class User; 
 class BookClub;
+class CheckIn;
 
 /**
  * @brief Representa o perfil público de um usúario.
@@ -17,27 +19,26 @@ class BookClub;
  * Exibe as informações do usúario para outros usuários: nome, descrição,
  * foto, leituras atuais, feed de check ins e métricas de leitura.
  */
-class UserProfile {
+class UserProfile : public Profile {
 private:
     User* user;   // de quem é este perfil
 
 public:
     UserProfile(User* user);
 
-    std::string getName()const;
-    std::string getDescription()const;
-    std::string getPhotoPath()const;
-    std::string getHeaderPath()const;
-
     int getTotalPages()const;
     int getTotalBooks()const;
     
-    std::vector<BookClub*> getPublicClubs();
+    std::string getName()const override;
+    std::vector<CheckIn> getAllCheckIn()const;
+    
+    std::vector<BookClub*> getClubs();
 
-    void show_name()const;
-    void show_pfp()const;
-    void show_description()const;
+    void show_name()const override;
+    void show_pfp()const override;
+    void show_description()const override;
     void show_checkins()const;
+    void show_clubs();
 
 };
 

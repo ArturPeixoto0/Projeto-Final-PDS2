@@ -7,8 +7,11 @@
 
 #include <string>
 #include <vector>
+#include "Profile.hpp"
 
+class User;
 class BookClub;
+class CheckIn;
 
 /**
  * @brief Representa o perfil público de um clube do livro.
@@ -16,25 +19,25 @@ class BookClub;
  * Exibe as informações do clube para outros usuários: nome, descrição,
  * foto, membros, leitura atual, feed de check ins e métricas de leitura.
  */
-class ClubProfile {
+class ClubProfile: public Profile {
 private:
     BookClub* club;   // club dono do perfil
 
 public:
     ClubProfile(BookClub* club);
 
-    std::string getName()const;
-    std::string getDescription()const;
-    std::string getPhotoPath()const;
-    std::string getHeaderPath()const;
+    std::string getName()const override;
+    std::vector<CheckIn> getAllCheckIn()const;
+
+    std::vector<User*> getUsers();
 
     void showReadingStatus();
     
-    void show_name()const;
-    void show_pfp()const;
-    void show_description()const;
+    void show_name()const override;
+    void show_pfp()const override;
+    void show_description()const override;
     void show_checkins()const;
-    void show_members()const;
+    void show_users()const;
     void show_current_reading()const;
     void show_metrics()const;
 
