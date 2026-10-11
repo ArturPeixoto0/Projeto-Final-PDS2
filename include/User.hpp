@@ -1,8 +1,8 @@
 /**
- * @file user.hpp
+ * @file User.hpp
  * @brief Declaração da classe User.
  */
-#ifndef USER_H 
+#ifndef USER_H
 #define USER_H
 
 #include <string>
@@ -22,59 +22,70 @@ class Book;
  * Oferece as ações que o usuário pode realizar: criar e entrar em clubes,
  * fazer check ins, comentar e avaliar leituras.
  */
+
 class User {
     private:
 
         std::string name; //nome do User
         std::string email; //email da conta do User
         std::string password; //senha da conta do User
-        std::vector<BookClub*> CurrentClubs; //vetor com todos os clubes atuais do User
-        std::vector<CheckIn*> AllCheckIn; //vetor qcom todos os check-ins já feitos pelo User
-        int TotalPages; //paginômetro total do usuário
-        int TotalBooks; //livrômetro total do usuário
-        UserProfile profile; //perfil do User
+        std::vector<BookClub*> currentClubs; //vetor com todos os clubes atuais do User
+        std::vector<CheckIn*> allCheckIns; //vetor com todos os check-ins já feitos pelo User
+        int totalPages = 0; //paginômetro total do usuário
+        int totalBooks = 0; //livrômetro total do usuário
+        UserProfile profile; //perfil do User (inicializar com profile(this) no .cpp)
 
     public:
-        User();
         User(const std::string& name,
-            const std::string& email,
-            const std::string& password);
+             const std::string& email,
+             const std::string& password);
+             
         ~User();
 
-        std::string getName() const;
-        void setName(const std::string& name);
-        std::string getEmail() const;
+        User(const User&) = delete;
+        User& operator = (const User&) = delete;
+
+        //dados da conta:
+        std::string getName() const; //retorna o nome do usuário
+
+        void setName(const std::string& name); //altera o nome do usuário
+
+        std::string getEmail() const; // retorna email da conta
+
         bool checkPassword(const std::string& attempt) const;
 
+        //perfil: 
+        UserProfile& getProfile();
+        const UserProfile& getProfile() const;
 
-        UserProfile& getprofile();
-
-        std::vector<BookClub*> getCurrentClubs() const;
-        bool participaDe(const BookClub* club) const;
-
-        std::vector<CheckIn*> getAllCheckIns() const;
-        int getCurrentPage(const BookClub* club) const;
-
-        int getTotalPages() const;
-        void setTotalPages(int Npages); 
-        int getTotalBooks() const;
-        void setTotalBooks(int quantity); 
-        
-        BookClub* CriarClube(const std::string& clubName);
-
-        bool EntrarClube(BookClub* Club);
-        bool SairClube(BookClub* Club);
-
-        CheckIn* RealizarCheckIn(BookClub* club, int page, const std::string& text, 
-                                bool finished = false);
-
-        bool ApagarSelfCheckIn(CheckIn* checkIn);
-
-        Comment* Comentar(CheckIn* chekIn, const std:: string& text);
+        //clubes:
+        const std::vector<BookClub*>& getCurrentClubs() const;
+        bool participaDe(const BookClub* club) const; //verifica se participa
     
+        BookClub* criarClube(const std::string& clubName);
+        
+        bool entrarClube(BookClub* club);
+        bool sairClube(BookClub* club);
 
-        bool SugerirLivro(BookClub* club, Book* book); 
-        void AvaliarLeitura (BookClub* club, Book* book, double nota);
+        //check-ins e comentarios:
+        const std::vector<CheckIn*>& getAllCheckIns() const;
+        int getCurrentPage(const BookClub* club) const; //pagina do ultimo checkin do clube
+
+        CheckIn* realizarCheckIn(BookClub* club, int page, const std::string& text, 
+                                bool finished = false); //registra check-in e atualiza paginometro/livrometro
+    
+        bool apagarCheckIn(CheckIn* checkIn);
+
+        Comment* comentar(CheckIn* checkIn, const std::string& text);
+    
+        //livros: 
+        bool sugerirLivro(BookClub* club, Book* book); 
+        bool avaliarLeitura (BookClub* club, Book* book, double nota);
+
+        //métricas:
+        int getTotalPages() const; //paginometro
+        int getTotalBooks() const; //livrometro
+    
 };
 
 #endif
