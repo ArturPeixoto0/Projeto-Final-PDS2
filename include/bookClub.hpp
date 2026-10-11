@@ -60,9 +60,9 @@ class BookClub {
 
         std::string getName() const;
         Book* getCurrentReading()  const;
-        std::vector<Book*> getFutureReading() const;
-        std::vector<Book*> getPastReadings() const;
-        std::vector<CheckIn*> getFeed() const;
+        const std::vector<Book*>& getFutureReading() const;
+        const std::vector<Book*>& getPastReadings() const;
+        const std::vector<CheckIn*>& getFeed() const;
         int getReadPages() const;
         int getReadBooks() const;
         bool getReading() const;
