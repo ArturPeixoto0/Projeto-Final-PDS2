@@ -61,14 +61,26 @@ class Book {
         void setISBN(const std::string ISBN);
         std::string getISBN() const;
 
+         /**
+         * @brief Registra uma nova avaliação do livro.
+         * @param grade Nota dada por um usuário, de 0 a 5.
+         */
         void addGrade(double grade);
+           /**
+         * @brief Retorna a nota geral do livro.
+         * @return Média das avaliações recebidas, ou 0 se não houver nenhuma.
+         */
         double getGrade() const;
 
+        /// @brief Soma um usuário à contagem de leitores do livro.
         void incrementReaders(int number_of_readers);
+        /// @brief Subtrai um usuário à contagem de leitores do livro.
         void decrementReaders(int number_of_readers);
         int getNumberReaders() const;
 
+        /// @brief Soma um clube à contagem de clubes lendo o livro.
         void incrementClubs(int number_of_clubs);
+        /// @brief Subtrai um clube à contagem de clubes lendo o livro.
         void decrementClubs(int number_of_clubs);
         int getNumberClubs() const;
         
