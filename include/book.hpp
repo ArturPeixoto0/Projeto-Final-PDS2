@@ -24,9 +24,7 @@ class Book {
         double grade;
         double grade_sum;      
         int grade_count;      
-        int number_of_readers;
-        int number_of_clubs;
-
+    
     public: 
         /// @brief Cria um livro vazio, com valores padrões.
         Book();
@@ -73,15 +71,15 @@ class Book {
         double getGrade() const;
 
         /// @brief Soma um usuário à contagem de leitores do livro.
-        void incrementReaders(int number_of_readers);
+        void incrementReaders();
         /// @brief Subtrai um usuário à contagem de leitores do livro.
-        void decrementReaders(int number_of_readers);
+        void decrementReaders();
         int getNumberReaders() const;
 
         /// @brief Soma um clube à contagem de clubes lendo o livro.
-        void incrementClubs(int number_of_clubs);
+        void incrementClubs();
         /// @brief Subtrai um clube à contagem de clubes lendo o livro.
-        void decrementClubs(int number_of_clubs);
+        void decrementClubs();
         int getNumberClubs() const;
         
         ~Book();
