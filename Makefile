@@ -3,17 +3,31 @@ CFLAGS=-std=c++11 -Wall
 
 BUILD_DIR=./build
 INCLUDE_DIR=./include
+TESTS_DIR=./tests
+BUILD_TESTS_DIR=./tests/buildTests
 SRC_DIR=./src
 ENTIDADES_DIR=./src/entidades
     
-OBJS = ${BUILD_DIR}/book.o \
+
+CLASS_OBJS = ${BUILD_DIR}/book.o \
 ${BUILD_DIR}/bookClub.o \
 ${BUILD_DIR}/CheckIn.o \
 ${BUILD_DIR}/Comment.o \
 ${BUILD_DIR}/User.o \
 ${BUILD_DIR}/Profile.o \
 ${BUILD_DIR}/ClubProfile.o \
-${BUILD_DIR}/UserProfile.o \
+${BUILD_DIR}/UserProfile.o 
+
+TESTS_OBJS = ${BUILD_TESTS_DIR}/testBook.o \
+${BUILD_TESTS_DIR}/testBookClub.o \
+${BUILD_TESTS_DIR}/testCheckIn.o \
+${BUILD_TESTS_DIR}/testComment.o \
+${BUILD_TESTS_DIR}/testUser.o \
+${BUILD_TESTS_DIR}/testProfile.o \
+${BUILD_TESTS_DIR}/testClubProfile.o \
+${BUILD_TESTS_DIR}/testUserProfile.o 
+
+OBJS = ${CLASS_OBJS} \
 ${BUILD_DIR}/main.o
     
 all: ${BUILD_DIR} ${OBJS}
@@ -43,8 +57,79 @@ ${BUILD_DIR}/ClubProfile.o: ${INCLUDE_DIR}/ClubProfile.hpp ${INCLUDE_DIR}/Profil
 ${BUILD_DIR}/UserProfile.o: ${INCLUDE_DIR}/UserProfile.hpp ${INCLUDE_DIR}/Profile.hpp ${ENTIDADES_DIR}/UserProfile.cpp
 	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${ENTIDADES_DIR}/UserProfile.cpp -o ${BUILD_DIR}/UserProfile.o 
 
-${BUILD_DIR}/main.o: ${INCLUDE_DIR}/book.hpp ${INCLUDE_DIR}/bookClub.hpp ${INCLUDE_DIR}/CheckIn.hpp ${INCLUDE_DIR}/Comment.hpp ${INCLUDE_DIR}/User.hpp ${INCLUDE_DIR}/Profile.hpp ${INCLUDE_DIR}/ClubProfile.hpp ${INCLUDE_DIR}/ClubProfile.hpp ${SRC_DIR}/main.cpp
+${BUILD_DIR}/main.o: ${INCLUDE_DIR}/book.hpp ${INCLUDE_DIR}/bookClub.hpp ${INCLUDE_DIR}/CheckIn.hpp ${INCLUDE_DIR}/Comment.hpp ${INCLUDE_DIR}/User.hpp ${INCLUDE_DIR}/Profile.hpp ${INCLUDE_DIR}/ClubProfile.hpp ${SRC_DIR}/main.cpp
 	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${SRC_DIR}/main.cpp -o ${BUILD_DIR}/main.o
     
+#Compila os tests
+
+${BUILD_TESTS_DIR}/testBook.o: ${INCLUDE_DIR}/doctest.h ${TESTS_DIR}/testBook.cpp ${INCLUDE_DIR}/book.hpp 
+	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${TESTS_DIR}/testBook.cpp -o ${BUILD_TESTS_DIR}/testBook.o 
+
+${BUILD_TESTS_DIR}/testBookClub.o: ${INCLUDE_DIR}/doctest.h ${TESTS_DIR}/testBookClub.cpp ${INCLUDE_DIR}/bookClub.hpp 
+	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${TESTS_DIR}/testBookClub.cpp -o ${BUILD_TESTS_DIR}/testBookClub.o 
+
+${BUILD_TESTS_DIR}/testCheckIn.o: ${INCLUDE_DIR}/doctest.h ${TESTS_DIR}/testCheckIn.cpp ${INCLUDE_DIR}/CheckIn.hpp 
+	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${TESTS_DIR}/testCheckIn.cpp -o ${BUILD_TESTS_DIR}/testCheckIn.o 
+
+${BUILD_TESTS_DIR}/testComment.o: ${INCLUDE_DIR}/doctest.h ${TESTS_DIR}/testComment.cpp ${INCLUDE_DIR}/Comment.hpp 
+	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${TESTS_DIR}/testComment.cpp -o ${BUILD_TESTS_DIR}/testComment.o 
+
+${BUILD_TESTS_DIR}/testUser.o: ${INCLUDE_DIR}/doctest.h ${TESTS_DIR}/testUser.cpp ${INCLUDE_DIR}/User.hpp 
+	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${TESTS_DIR}/testUser.cpp -o ${BUILD_TESTS_DIR}/testUser.o 
+
+${BUILD_TESTS_DIR}/testProfile.o: ${INCLUDE_DIR}/doctest.h ${TESTS_DIR}/testProfile.cpp ${INCLUDE_DIR}/Profile.hpp
+	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${TESTS_DIR}/testProfile.cpp -o ${BUILD_TESTS_DIR}/testProfile.o 
+
+${BUILD_TESTS_DIR}/testClubProfile.o: ${INCLUDE_DIR}/doctest.h ${TESTS_DIR}/testClubProfile.cpp ${INCLUDE_DIR}/ClubProfile.hpp ${INCLUDE_DIR}/Profile.hpp
+	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${TESTS_DIR}/testClubProfile.cpp -o ${BUILD_TESTS_DIR}/testClubProfile.o 
+
+${BUILD_TESTS_DIR}/testUserProfile.o: ${INCLUDE_DIR}/doctest.h ${TESTS_DIR}/testUserProfile.cpp ${INCLUDE_DIR}/UserProfile.hpp ${INCLUDE_DIR}/Profile.hpp 
+	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${TESTS_DIR}/testUserProfile.cpp -o ${BUILD_TESTS_DIR}/testUserProfile.o 
+
+${BUILD_TESTS_DIR}/testMain.o: ${INCLUDE_DIR}/doctest.h ${TESTS_DIR}/testMain.cpp
+	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${TESTS_DIR}/testMain.cpp -o ${BUILD_TESTS_DIR}/testMain.o
+
+
+
+ifneq ($(filter testBook,$(MAKECMDGOALS)),)
+	SELECTED_TEST = ${BUILD_TESTS_DIR}/testBook.o
+	NAME_EXECUTABLE = testBook
+else ifneq ($(filter testBookClub,$(MAKECMDGOALS)),)
+	SELECTED_TEST = ${BUILD_TESTS_DIR}/testBookClub.o
+	NAME_EXECUTABLE = testBookClub
+else ifneq ($(filter testCheckIn,$(MAKECMDGOALS)),)
+	SELECTED_TEST = ${BUILD_TESTS_DIR}/testCheckIn.o
+	NAME_EXECUTABLE = testCheckIn
+else ifneq ($(filter testComment,$(MAKECMDGOALS)),)
+	SELECTED_TEST = ${BUILD_TESTS_DIR}/testComment.o
+	NAME_EXECUTABLE = testComment
+else ifneq ($(filter testUser,$(MAKECMDGOALS)),)
+	SELECTED_TEST = ${BUILD_TESTS_DIR}/testUser.o
+	NAME_EXECUTABLE = testUser
+else ifneq ($(filter testProfile,$(MAKECMDGOALS)),)
+	SELECTED_TEST = ${BUILD_TESTS_DIR}/testProfile.o
+	NAME_EXECUTABLE = testProfile
+else ifneq ($(filter testClubProfile,$(MAKECMDGOALS)),)
+	SELECTED_TEST = ${BUILD_TESTS_DIR}/testClubProfile.o
+	NAME_EXECUTABLE = testClubProfile
+else ifneq ($(filter testUserProfile,$(MAKECMDGOALS)),)
+	SELECTED_TEST = ${BUILD_TESTS_DIR}/testUserProfile.o
+	NAME_EXECUTABLE = testUserProfile
+else 
+	SELECTED_TEST = ${TESTS_OBJS}
+	NAME_EXECUTABLE = allTests
+endif
+
+
+.PHONY: test testBook testBookClub testCheckIn testComment testUser testProfile testClubProfile testUserProfile
+
+test: ${SELECTED_TEST} ${CLASS_OBJS} ${BUILD_TESTS_DIR}/testMain.o
+	${CC} $^ -o ${BUILD_TESTS_DIR}/${NAME_EXECUTABLE}
+	./${BUILD_TESTS_DIR}/${NAME_EXECUTABLE}
+
+testBook testBookClub testCheckIn testComment testUser testProfile testClubProfile testUserProfile:
+
+
+
 clean:
-	rm -f ${BUILD_DIR}/*.o ${BUILD_DIR}/programa
+	rm -f ${BUILD_DIR}/*.o ${BUILD_DIR}/programa ${BUILD_TESTS_DIR}/*.o
