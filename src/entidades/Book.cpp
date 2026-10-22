@@ -1,11 +1,5 @@
 #include "Book.hpp"
-#include "BookClub.hpp"
 #include <string>
-#include <algorithm>
-
-
-Book::Book() {
-}
 
 Book::Book(std::string title,   
         std::string author,
@@ -47,38 +41,6 @@ void Book::setISBN(const std::string ISBN){
 }
 std::string Book::getISBN() const {
     return this->ISBN;
-}
-
-void Book::addGrade(double grade){
-
-} //PENSAR COMO FAZER
-
-double Book::getGrade() const {
-    return this->grade;
-}
-
-
-void Book::incrementReaders(BookClub* club){
-    this->currentReaders + club->getNumberMembers();
-}
-void Book::decrementReaders(BookClub* club){
-    this->currentReaders - club->getNumberMembers();
-}
-int Book::getNumberReaders() const {
-    return this->currentReaders;
-}
-
-void Book::addClub(BookClub* club){
-    this->currentClubs.push_back(club);
-    this->incrementReaders(club);
-}
-void Book::removeClub(BookClub* club){
-    auto it = std::find(this->currentClubs.begin(), currentClubs.end(), club);
-    this->decrementReaders(club);
-    this->currentClubs.erase(it);
-}
-int Book::getNumberClubs() const {
-    return this->currentClubs.size();
 }
         
 Book::~Book(){
