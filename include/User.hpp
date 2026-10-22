@@ -7,12 +7,14 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include "UserProfile.hpp"
 
 class BookClub;
 class CheckIn;
 class Comment;
 class Book;
+class ReadingMetrics;
 
 /**
  * @brief Representa um usuário do sistema.
@@ -31,6 +33,7 @@ class User {
         std::string password; //senha da conta do User
         std::vector<BookClub*> currentClubs; //vetor com todos os clubes atuais do User
         std::vector<CheckIn*> allCheckIns; //vetor com todos os check-ins já feitos pelo User
+        std::map<BookClub*, ReadingMetrics*> allMetrics;
         int totalPages = 0; //paginômetro total do usuário
         int totalBooks = 0; //livrômetro total do usuário
         UserProfile profile; //perfil do User (inicializar com profile(this) no .cpp)
@@ -62,7 +65,7 @@ class User {
         const std::vector<BookClub*>& getCurrentClubs() const;
         bool participaDe(const BookClub* club) const; //verifica se participa
     
-        BookClub* criarClube(const std::string& clubName);
+        BookClub* criarClube(const std::string& clubName, Book* reading);
         
         bool entrarClube(BookClub* club);
         bool sairClube(BookClub* club);
@@ -80,7 +83,7 @@ class User {
     
         //livros: 
         bool sugerirLivro(BookClub* club, Book* book); 
-        bool avaliarLeitura (BookClub* club, Book* book, double nota);
+        bool avaliarLeitura (BookClub* club, double nota);
 
         //métricas:
         int getTotalPages() const; //paginometro
