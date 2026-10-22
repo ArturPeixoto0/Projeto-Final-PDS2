@@ -12,9 +12,12 @@ int ReadingMetrics::getCurrentPage(){
 }
 
 void ReadingMetrics::addPages(int pages){
-    if (currentPage+pages < reading->getPages() && pages >= 0)
+    if (currentPage+pages <= reading->getPages() && pages >= 0){
         currentPage += pages;
-
+        if (currentPage == reading->getPages()){
+            this->finish();
+        }
+    }
 }
 
 double ReadingMetrics::getGrade(){
@@ -32,14 +35,14 @@ bool ReadingMetrics::isFinished(){
 }
 
 void ReadingMetrics::finish(){
-    finished = true;
+    if (currentPage == reading->getPages())
+        finished = true;
 }
 
-void ReadingMetrics::start(){
+void ReadingMetrics::reset(){
     finished = false;
-    grade = 0;
+    grade = -1;
     currentPage = 0;
-
 }
 
 ReadingMetrics::~ReadingMetrics(){}
