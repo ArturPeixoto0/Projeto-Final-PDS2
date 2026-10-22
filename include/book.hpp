@@ -6,6 +6,9 @@
 #define BOOK_H
 
 #include <string>
+#include <vector>
+
+class BookClub;
 
 /**
  * @brief Representa um livro que pode ser lido pelos clubes do livro.
@@ -21,7 +24,9 @@ class Book {
         std::string genre;
         int pages;
         std::string ISBN;
-        double grade;
+        int currentReaders = 0;
+        std::vector<BookClub*> currentClubs;
+        double grade = 0;
         double grade_sum;      
         int grade_count;      
     
@@ -70,22 +75,22 @@ class Book {
          */
         double getGrade() const;
 
-        /// @brief Soma um usuário à contagem de leitores do livro.
-        void incrementReaders();
-        /// @brief Subtrai um usuário à contagem de leitores do livro.
-        void decrementReaders();
+        /// @brief Soma a quantidade de usuários do clube à contagem de leitores do livro.
+        void incrementReaders(BookClub* club);
+        /// @brief Subtrai a quantidade de usuários do clube à contagem de leitores do livro.
+        void decrementReaders(BookClub* club);
         int getNumberReaders() const;
 
-        /// @brief Soma um clube à contagem de clubes lendo o livro.
-        void incrementClubs();
-        /// @brief Subtrai um clube à contagem de clubes lendo o livro.
-        void decrementClubs();
+        /// @brief adiciona um clube ao vetor de clubes lendo o livro.
+        void addClub(BookClub* club);
+
+        /// @brief Subtrai um clube ao vetor de clubes lendo o livro.
+        void removeClub(BookClub* club);
         int getNumberClubs() const;
         
         ~Book();
 
 };
-
 
 
 #endif
