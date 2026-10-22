@@ -21,7 +21,7 @@ class ReadingMetrics {
     void setGrade(double grade);
     bool isFinished();
     void finish();
-    void start();
+    void reset();
 
     ~ReadingMetrics();
 };
