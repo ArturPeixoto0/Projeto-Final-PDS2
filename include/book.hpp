@@ -1,5 +1,5 @@
 /**
- * @file book.hpp
+ * @file Book.hpp
  * @brief declara a classe book
  */
 #ifndef BOOK_H
@@ -9,6 +9,7 @@
 #include <vector>
 
 class BookClub;
+class User;
 
 /**
  * @brief Representa um livro que pode ser lido pelos clubes do livro.
@@ -23,16 +24,9 @@ class Book {
         std::string author;
         std::string genre;
         int pages;
-        std::string ISBN;
-        int currentReaders = 0;
-        std::vector<BookClub*> currentClubs;
-        double grade = 0;
-        double grade_sum;      
-        int grade_count;      
+        std::string ISBN;   
     
     public: 
-        /// @brief Cria um livro vazio, com valores padrões.
-        Book();
 
         /**
          * @brief Cria um livro.
@@ -63,30 +57,6 @@ class Book {
 
         void setISBN(const std::string ISBN);
         std::string getISBN() const;
-
-         /**
-         * @brief Registra uma nova avaliação do livro.
-         * @param grade Nota dada por um usuário, de 0 a 5.
-         */
-        void addGrade(double grade);
-           /**
-         * @brief Retorna a nota geral do livro.
-         * @return Média das avaliações recebidas, ou 0 se não houver nenhuma.
-         */
-        double getGrade() const;
-
-        /// @brief Soma a quantidade de usuários do clube à contagem de leitores do livro.
-        void incrementReaders(BookClub* club);
-        /// @brief Subtrai a quantidade de usuários do clube à contagem de leitores do livro.
-        void decrementReaders(BookClub* club);
-        int getNumberReaders() const;
-
-        /// @brief adiciona um clube ao vetor de clubes lendo o livro.
-        void addClub(BookClub* club);
-
-        /// @brief Subtrai um clube ao vetor de clubes lendo o livro.
-        void removeClub(BookClub* club);
-        int getNumberClubs() const;
         
         ~Book();
 
