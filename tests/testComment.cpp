@@ -2,8 +2,8 @@
 #include "Comment.hpp"
 #include "CheckIn.hpp"
 #include "User.hpp"
-#include "bookClub.hpp"
-#include "book.hpp"
+#include "BookClub.hpp"
+#include "Book.hpp"
 #include <ctime>
 #include <stdexcept>
 #include <string>

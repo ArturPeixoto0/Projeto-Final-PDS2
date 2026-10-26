@@ -9,8 +9,8 @@
  */
 #include "doctest.h"
 #include "User.hpp"
-#include "bookClub.hpp"
-#include "book.hpp"
+#include "BookClub.hpp"
+#include "Book.hpp"
 #include "CheckIn.hpp"
 #include "Comment.hpp"
 #include <stdexcept>

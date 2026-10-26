@@ -2,8 +2,8 @@
 #include "CheckIn.hpp"
 #include "Comment.hpp"
 #include "User.hpp"
-#include "bookClub.hpp"
-#include "book.hpp"
+#include "BookClub.hpp"
+#include "Book.hpp"
 
 
 struct CenarioCheckIn {
