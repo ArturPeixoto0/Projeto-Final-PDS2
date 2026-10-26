@@ -12,8 +12,8 @@
 #include "doctest.h"
 #include "UserProfile.hpp"
 #include "User.hpp"
-#include "bookClub.hpp"
-#include "book.hpp"
+#include "BookClub.hpp"
+#include "Book.hpp"
 #include "CheckIn.hpp"
 #include <type_traits>
 

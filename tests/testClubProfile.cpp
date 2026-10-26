@@ -1,9 +1,9 @@
 #include "doctest.h"
 #include "ClubProfile.hpp"
-#include "bookClub.hpp"
+#include "BookClub.hpp"
 #include "User.hpp"
 #include "CheckIn.hpp"
-#include "book.hpp"
+#include "Book.hpp"
 
 #include <iostream>
 #include <sstream>

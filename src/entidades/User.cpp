@@ -6,6 +6,7 @@
 #include "BookClub.hpp"
 #include "UserProfile.hpp"
 #include "CheckIn.hpp"
+#include "Comment.hpp"
 #include "ReadingMetrics.hpp"
 
 User::User(const std::string& name,
