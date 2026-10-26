@@ -1,5 +1,5 @@
 /**
- * @file bookClub.hpp
+ * @file BookClub.hpp
  * @brief Declara a classe BookClub.
  */
 #ifndef BOOKCLUB_H
@@ -27,10 +27,13 @@ class Comment;
  * ou passado), avaliações e votos daquele livro neste clube.
  *
  * Posse dos objetos:
- *  - O clube é dono dos CheckIn do feed e os apaga no destrutor.
+ *  - O clube NÃO é dono dos CheckIn do feed: quem cria e apaga os check-ins
+ *    é o User autor (ver User::realizarCheckIn e User::apagarCheckIn).
+ *    O feed guarda só ponteiros para eles.
  *  - O clube NÃO é dono de User nem de Book, que existem fora dele.
  *
- * Por causa dessa posse, o clube não pode ser copiado.
+ * O clube não pode ser copiado: uma cópia teria os mesmos membros e o
+ * mesmo feed, e os dois clubes ficariam inconsistentes.
  */
 class BookClub {
     public:
@@ -74,13 +77,30 @@ class BookClub {
                  const std::string& name,
                  const std::string& type,
                  bool isPrivate = false);
- 
+
+        /**
+         * @brief Cria um clube do livro que já começa com uma leitura atual.
+         *        Usado por User::criarClube.
+         * @param founder Usuário que cria o clube (membro e administrador).
+         * @param name Nome do clube.
+         * @param firstReading Livro que vira a leitura atual. Se for nullptr,
+         *        o clube começa sem leitura.
+         * @param type Tipo do clube.
+         * @param isPrivate Se true, só entra quem tiver o código de convite.
+         */
+        BookClub(User* founder,
+                 const std::string& name,
+                 Book* firstReading,
+                 const std::string& type = "democratico",
+                 bool isPrivate = false);
+
         BookClub(const BookClub&) = delete;
         BookClub& operator=(const BookClub&) = delete;
  
         /**
-         * @brief Destrói o clube, apagando os CheckIn do feed.
-         *        Usuários e livros não são apagados.
+         * @brief Destrói o clube. Não apaga CheckIn, User nem Book (o clube
+         *        não é dono deles), mas tira o clube da lista de cada membro
+         *        para que nenhum User fique apontando para um clube destruído.
          */
         ~BookClub();
  
@@ -100,6 +120,8 @@ class BookClub {
         User* getAdmin() const;
         /** @brief Retorna os membros do clube. */
         const std::vector<User*>& getMembers() const;
+        /** @brief Retorna a quantidade de membros do clube (incluindo o administrador). */
+        int getNumberMembers() const;
         /** @brief Retorna o catálogo completo (futuros, atual e passados). */
         const std::vector<CatalogEntry>& getCatalog() const;
         /** @brief Retorna o livro da leitura atual, ou nullptr se não houver. */
@@ -108,6 +130,12 @@ class BookClub {
         const std::vector<CheckIn*>& getFeed() const;
         /** @brief Retorna o total de páginas lidas no clube. */
         int getReadPages() const;
+        /**
+         * @brief Define o total de páginas lidas no clube.
+         *        Chamado por User::realizarCheckIn para atualizar a métrica.
+         * @param pages Novo total. Valores negativos são ignorados.
+         */
+        void setReadPages(int pages);
         /** @brief Retorna o total de livros lidos no clube. */
         int getReadBooks() const;
         /** @brief Retorna a data de criação do clube. */
@@ -128,6 +156,10 @@ class BookClub {
         double MediaPaginasPorDia() const;
         /** @brief Média, em porcentagem, do quanto os membros já leram do livro atual. */
         double MediaPorcentagemLeitura() const;
+        /** @brief Quantidade de membros que já terminaram o livro atual (0 se não há leitura). */
+        int TotalTerminaram() const;
+        /** @brief Porcentagem (0 a 100) dos membros que já terminaram o livro atual (0 se não há leitura ou membros). */
+        double PorcentagemTerminaram() const;
         /** @brief Membro com mais páginas lidas, ou nullptr se não há membros. */
         User* LiderDeLeitura() const;
         /** @brief Membros ordenados do que mais leu para o que menos leu. */
@@ -164,11 +196,21 @@ class BookClub {
         // ---------- CHECK-INS ----------
  
         /**
-         * @brief Adiciona um check-in ao feed e atualiza as métricas.
-         * @param checkIn Check-in a adicionar; passa a pertencer ao clube.
-         * @return false se for nulo ou se o autor não for membro.
+         * @brief Adiciona um check-in ao feed.
+         *        As páginas lidas são atualizadas pelo User via setReadPages,
+         *        então este método não mexe nas métricas (senão contaria duas vezes).
+         * @param checkIn Check-in a adicionar (continua pertencendo ao autor).
+         * @return false se for nulo, se o autor não for membro, se o check-in
+         *         for de outro clube ou se já estiver no feed.
          */
         bool adicionarCheckIn(CheckIn* checkIn);
+
+        /**
+         * @brief Tira um check-in do feed, SEM apagá-lo (sem delete).
+         *        Chamado por User::apagarCheckIn antes de o User fazer o delete.
+         *        Se o check-in não estiver no feed, não faz nada.
+         */
+        void eraseCheckIn(CheckIn* checkIn);
  
         // ---------- CATÁLOGO ----------
  
@@ -234,7 +276,9 @@ class BookClub {
         bool renomear(User* actor, const std::string& novoNome);
  
         /**
-         * @brief Apaga um check-in do feed e atualiza as métricas.
+         * @brief Apaga o check-in de outro membro (moderação do administrador).
+         *        Como o dono do check-in é o autor, o clube pede ao autor que o
+         *        apague (User::apagarCheckIn), que tira do feed e faz o delete.
          * @return false se actor não for admin ou o check-in não estiver no feed.
          */
         bool apagarCheckIn(User* actor, CheckIn* checkIn);
@@ -247,8 +291,9 @@ class BookClub {
         bool definirTempoLeitura(User* actor, int dias);
  
         /**
-         * @brief Apaga um comentário.
-         * @return false se actor não for admin.
+         * @brief Apaga um comentário (tira do check-in e faz o delete).
+         * @return false se actor não for admin, se o comentário for nulo, de
+         *         outro clube ou não estiver na lista do seu check-in.
          */
         bool apagarComentario(User* actor, Comment* comentario);
  
