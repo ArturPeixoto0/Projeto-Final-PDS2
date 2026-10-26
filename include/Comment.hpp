@@ -16,6 +16,9 @@ class CheckIn;
  *
  * Armazena os dados do comentário (autor do comentário, clube do livro,
  * check in onde foi realizado, texto, data e hora)
+ *
+ * O comentário pertence ao CheckIn, que o apaga no destrutor
+ * (ver CheckIn::eraseAllComments).
  */
 class Comment {
     private:
@@ -26,6 +29,14 @@ class Comment {
         std::time_t _created_at;
 
     public:
+        /** @brief Limite de caracteres do comentário (US25: menor que um tweet). */
+        static const int MAX_LENGTH = 200;
+
+        /**
+         * @brief Cria um comentário.
+         * @throws std::invalid_argument se o texto for vazio ou maior que
+         *         MAX_LENGTH, ou se author, checkIn ou club forem nullptr.
+         */
         Comment(std::string text, User* author, CheckIn* checkIn, BookClub* club);
 
         std::string get_text() const;
