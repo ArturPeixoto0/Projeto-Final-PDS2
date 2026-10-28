@@ -123,11 +123,17 @@ CheckIn* User::realizarCheckIn(BookClub* club, int page, const std::string& text
 
     if (it != allMetrics.end()){
         if (finished == false){
-            CheckIn* novo = new CheckIn(this, club->getCurrentReading(), club, page, text);
+                        CheckIn* novo = new CheckIn(this, club->getCurrentReading(), club, page, text);
             this->allCheckIns.push_back(novo);
-            it->second->addPages(page);
 
-            club->setReadPages(club->getReadPages() + page);
+            // page é ONDE a pessoa está, não QUANTO ela leu.
+            // O quanto ela leu é a diferença para o último check-in.
+            int avanco = page - it->second->getCurrentPage();
+            if (avanco > 0) {
+                it->second->addPages(avanco);
+                this->totalPages += avanco;
+                club->setReadPages(club->getReadPages() + avanco);
+            }
 
             return novo;
         }
