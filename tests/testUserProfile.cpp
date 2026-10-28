@@ -18,7 +18,7 @@
 #include <type_traits>
 
 TEST_CASE("UserProfile: é um Profile") {
-    CHECK(std::is_base_of<Profile, UserProfile::value);
+    CHECK(std::is_base_of<Profile, UserProfile>::value);
 }
 
 TEST_CASE("UserProfile: getName pelo ponteiro de Profile chama a versão do UserProfile") {
