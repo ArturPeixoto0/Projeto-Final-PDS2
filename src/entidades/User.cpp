@@ -65,7 +65,7 @@ const std::vector<BookClub*>& User::getCurrentClubs() const {
     return this->currentClubs;
 }
 bool User::participaDe(const BookClub* club) const {
-    for (int i=0; i < this->currentClubs.size(); i++) {
+    for (int i=0; i < (int)this->currentClubs.size(); i++) {
         if (this->currentClubs[i] == club){
             return true;
         }
@@ -74,34 +74,38 @@ bool User::participaDe(const BookClub* club) const {
 } //verifica se participa
     
 BookClub* User::criarClube(const std::string& clubName, Book* reading) {
-    BookClub* novoClub = new BookClub(this, clubName, reading);
-    this->currentClubs.push_back(novoClub);
-    ReadingMetrics* novoMetrics = new ReadingMetrics(reading);
-    allMetrics.insert(std::pair <BookClub*, ReadingMetrics*> (novoClub, novoMetrics));
-    return novoClub;
-} 
 
-bool User::entrarClube(BookClub* club) {
-    if (club != nullptr){
-        if (this->participaDe(club) == false){
-        this->currentClubs.push_back(club);
-        ReadingMetrics* novoMetrics = new ReadingMetrics(club->getCurrentReading());
-        allMetrics.insert(std::pair <BookClub*, ReadingMetrics*> (club, novoMetrics));
-        return true;
-        }
+    return new BookClub(this, clubName, reading);
+}
+
+bool User::entrarClube(BookClub* club, const std::string& codigo) {
+    if (club == nullptr || this->participaDe(club) == true) {
         return false;
     }
-    return false;
-}
-bool User::sairClube(BookClub* club) {
-    if (this->participaDe(club) == true){
-        auto it = std::find(this->currentClubs.begin(), this->currentClubs.end(), club);
-        delete allMetrics[club];
-        allMetrics.erase(club);
-        this->currentClubs.erase(it);
-        return true;
+
+    if (club->isMember(this) == false) {
+        return club->entrarNoClube(this, codigo);
     }
-    return false;
+
+    this->currentClubs.push_back(club);
+    allMetrics.insert(std::pair<BookClub*, ReadingMetrics*>(club, new ReadingMetrics(club->getCurrentReading())));
+    return true;
+}
+
+bool User::sairClube(BookClub* club) {
+    if (this->participaDe(club) == false) {
+        return false;
+    }
+
+    if (club->isMember(this) == true) {
+        return club->sairDoClube(this);
+    }
+
+    auto it = std::find(this->currentClubs.begin(), this->currentClubs.end(), club);
+    this->currentClubs.erase(it);
+    delete allMetrics[club];
+    allMetrics.erase(club);
+    return true;
 }
 
         //check-ins e comentarios:

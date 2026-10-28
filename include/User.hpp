@@ -67,7 +67,7 @@ class User {
     
         BookClub* criarClube(const std::string& clubName, Book* reading);
         
-        bool entrarClube(BookClub* club);
+        bool entrarClube(BookClub* club, const std::string& codigo = "");
         bool sairClube(BookClub* club);
 
         //check-ins e comentarios:

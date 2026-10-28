@@ -94,6 +94,8 @@ BookClub::BookClub(User* founder,
     }
     this->members_.push_back(founder);
     this->inviteCode_ = gerarCodigo();
+
+    founder->entrarClube(this);
 }
 
 // Construtor delegado: primeiro roda o construtor de cima (depois dos ":"),
@@ -114,6 +116,7 @@ BookClub::~BookClub() {
     // Copiamos a lista porque sairClube pode acabar mexendo em members_
     // enquanto a gente percorre (e apagar de um vetor enquanto anda nele quebra o laço).
     std::vector<User*> copia = this->members_;
+    this->members_.clear();
     for (int i = 0; i < (int)copia.size(); i++) {
         if (copia[i]->participaDe(this)) {
             copia[i]->sairClube(this);
