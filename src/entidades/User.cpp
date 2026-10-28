@@ -16,14 +16,35 @@ User::User(const std::string& name,
 
              
 User::~User() {
-    for (auto& metric : allMetrics) {
-        delete metric.second;
+
+    for(int i = 0; i < (int)this->allCheckIns.size(); i++) {
+        BookClub* club = this->allCheckIns[i]->getClub();
+        if(this->participaDe(club)) {
+            club->eraseCheckIn(this->allCheckIns[i]);
+        }
     }
 
-    for (auto* checkIn : allCheckIns) {
-        delete checkIn;
+    std::vector<BookClub*> copia = this->currentClubs;
+    for(int i = 0; i < (int)copia.size(); i++) {
+        BookClub* club = copia[i];
+            if(club->isAdmin(this)) {
+                const std::vector<User*>& membros = club->getMembers();
+                for(int j = 0; j < (int)membros.size(); j++){
+                    if(membros[j] != this) {
+                        club->transferirAdmin(this, membros[j]);
+                        break;
+                    }
+                }
+            }
+            this->sairClube(club);
     }
-}
+    for(auto& metric : allMetrics) {
+        delete metric.second;
+    }
+    for(int i = 0; i < (int)this->allCheckIns.size(); i++) {
+        delete this->allCheckIns[i];
+    }
+}   
 
 /*
 User::User(const User&) = delete;

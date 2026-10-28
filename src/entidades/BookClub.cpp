@@ -369,11 +369,21 @@ bool BookClub::entrarNoClube(User* user, const std::string& codigo) {
 }
 
 bool BookClub::sairDoClube(User* user) {
-    if (!this->isMember(user) || user == this->admin_) {
+    if (!this->isMember(user)) {
+        return false;
+    }
+    // O admin só pode sair se for o último membro (senão, deve transferir antes).
+    if (user == this->admin_ && this->members_.size() > 1) {
         return false;
     }
 
     removerDaLista(this->members_, user);
+
+    // Saiu o último membro: o clube fica sem admin e é encerrado.
+    if (user == this->admin_) {
+        this->admin_ = nullptr;
+        this->active_ = false;
+    }
 
     if (user->participaDe(this)) {
         user->sairClube(this);
