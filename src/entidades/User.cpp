@@ -121,24 +121,40 @@ int User::getCurrentPage(const BookClub* club) const {
 CheckIn* User::realizarCheckIn(BookClub* club, int page, const std::string& text, bool finished){
     auto it = allMetrics.find(const_cast<BookClub*>(club));
 
-    if (it != allMetrics.end()){
-        if (finished == false){
-                        CheckIn* novo = new CheckIn(this, club->getCurrentReading(), club, page, text);
-            this->allCheckIns.push_back(novo);
-
-            // page é ONDE a pessoa está, não QUANTO ela leu.
-            // O quanto ela leu é a diferença para o último check-in.
-            int avanco = page - it->second->getCurrentPage();
-            if (avanco > 0) {
-                it->second->addPages(avanco);
-                this->totalPages += avanco;
-                club->setReadPages(club->getReadPages() + avanco);
-            }
-
-            return novo;
-        }
+    if(it == allMetrics.end()){
+        return nullptr; //usuário nao esta no clube
     }
-    return nullptr;
+    Book* livro = club->getCurrentReading();
+
+    if(livro == nullptr){
+        return nullptr; //clube sem leitura atual
+    }
+
+    if(finished == true){
+        page = livro->getPages();
+    }
+
+    CheckIn* novo = new CheckIn(this, livro, club, page, text);
+    this->allCheckIns.push_back(novo);
+
+    bool jaTinhaTerminado = it->second->isFinished();
+
+
+
+    // page é ONDE a pessoa está, não QUANTO ela leu.
+    // O quanto ela leu é a diferença para o último check-in.
+    int avanco = page - it->second->getCurrentPage();
+    if (avanco > 0) {
+        it->second->addPages(avanco);
+        this->totalPages += avanco;
+        club->setReadPages(club->getReadPages() + avanco);
+        }
+
+    if(jaTinhaTerminado == false && it->second->isFinished() == true){
+        this->totalBooks++;
+    }
+
+    return novo;
 } //registra check-in e atualiza paginometro/livrometro
     
 bool User::apagarCheckIn(CheckIn* checkIn){
