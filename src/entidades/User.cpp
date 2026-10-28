@@ -145,6 +145,7 @@ CheckIn* User::realizarCheckIn(BookClub* club, int page, const std::string& text
 
     CheckIn* novo = new CheckIn(this, livro, club, page, text);
     this->allCheckIns.push_back(novo);
+    club->adicionarCheckIn(novo);
 
     bool jaTinhaTerminado = it->second->isFinished();
 
