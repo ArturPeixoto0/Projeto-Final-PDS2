@@ -10,6 +10,7 @@ ENTIDADES_DIR=./src/entidades
     
 
 CLASS_OBJS = ${BUILD_DIR}/Book.o \
+${BUILD_DIR}/ReadingMetrics.o \
 ${BUILD_DIR}/BookClub.o \
 ${BUILD_DIR}/CheckIn.o \
 ${BUILD_DIR}/Comment.o \
@@ -25,7 +26,8 @@ ${BUILD_TESTS_DIR}/testComment.o \
 ${BUILD_TESTS_DIR}/testUser.o \
 ${BUILD_TESTS_DIR}/testProfile.o \
 ${BUILD_TESTS_DIR}/testClubProfile.o \
-${BUILD_TESTS_DIR}/testUserProfile.o 
+${BUILD_TESTS_DIR}/testUserProfile.o \
+${BUILD_TESTS_DIR}/testReadingMetrics.o
 
 OBJS = ${CLASS_OBJS} \
 ${BUILD_DIR}/main.o
@@ -36,6 +38,9 @@ all: ${BUILD_DIR} ${OBJS}
 ${BUILD_DIR}/Book.o: ${INCLUDE_DIR}/Book.hpp ${ENTIDADES_DIR}/Book.cpp
 	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${ENTIDADES_DIR}/Book.cpp -o ${BUILD_DIR}/Book.o 
     
+${BUILD_DIR}/ReadingMetrics.o: ${INCLUDE_DIR}/ReadingMetrics.hpp ${ENTIDADES_DIR}/ReadingMetrics.cpp
+	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${ENTIDADES_DIR}/ReadingMetrics.cpp -o ${BUILD_DIR}/ReadingMetrics.o
+
 ${BUILD_DIR}/BookClub.o: ${INCLUDE_DIR}/BookClub.hpp ${INCLUDE_DIR}/ClubProfile.hpp ${ENTIDADES_DIR}/BookClub.cpp
 	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${ENTIDADES_DIR}/BookClub.cpp -o ${BUILD_DIR}/BookClub.o 
     
@@ -45,8 +50,8 @@ ${BUILD_DIR}/CheckIn.o: ${INCLUDE_DIR}/CheckIn.hpp ${ENTIDADES_DIR}/CheckIn.cpp
 ${BUILD_DIR}/Comment.o: ${INCLUDE_DIR}/Comment.hpp ${ENTIDADES_DIR}/Comment.cpp
 	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${ENTIDADES_DIR}/Comment.cpp -o ${BUILD_DIR}/Comment.o 
 
-${BUILD_DIR}/User.o: ${INCLUDE_DIR}/User.hpp ${INCLUDE_DIR}/UserProfile.hpp ${ENTIDADES_DIR}/User.cpp
-	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${ENTIDADES_DIR}/User.cpp -o ${BUILD_DIR}/User.o 
+${BUILD_DIR}/User.o: ${INCLUDE_DIR}/User.hpp ${INCLUDE_DIR}/UserProfile.hpp ${INCLUDE_DIR}/ReadingMetrics.hpp ${ENTIDADES_DIR}/User.cpp
+	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${ENTIDADES_DIR}/User.cpp -o ${BUILD_DIR}/User.o
 
 ${BUILD_DIR}/Profile.o: ${INCLUDE_DIR}/Profile.hpp ${ENTIDADES_DIR}/Profile.cpp
 	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${ENTIDADES_DIR}/Profile.cpp -o ${BUILD_DIR}/Profile.o 
@@ -89,45 +94,49 @@ ${BUILD_TESTS_DIR}/testUserProfile.o: ${INCLUDE_DIR}/doctest.h ${TESTS_DIR}/test
 ${BUILD_TESTS_DIR}/testMain.o: ${INCLUDE_DIR}/doctest.h ${TESTS_DIR}/testMain.cpp
 	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${TESTS_DIR}/testMain.cpp -o ${BUILD_TESTS_DIR}/testMain.o
 
-
+${BUILD_TESTS_DIR}/testReadingMetrics.o: ${INCLUDE_DIR}/doctest.h ${TESTS_DIR}/testReadingMetrics.cpp ${INCLUDE_DIR}/ReadingMetrics.hpp
+	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${TESTS_DIR}/testReadingMetrics.cpp -o ${BUILD_TESTS_DIR}/testReadingMetrics.o
 
 ifneq ($(filter testBook,$(MAKECMDGOALS)),)
-	SELECTED_TEST = ${BUILD_TESTS_DIR}/testBook.o
-	NAME_EXECUTABLE = testBook
+SELECTED_TEST = ${BUILD_TESTS_DIR}/testBook.o
+NAME_EXECUTABLE = testBook
 else ifneq ($(filter testBookClub,$(MAKECMDGOALS)),)
-	SELECTED_TEST = ${BUILD_TESTS_DIR}/testBookClub.o
-	NAME_EXECUTABLE = testBookClub
+SELECTED_TEST = ${BUILD_TESTS_DIR}/testBookClub.o
+NAME_EXECUTABLE = testBookClub
 else ifneq ($(filter testCheckIn,$(MAKECMDGOALS)),)
-	SELECTED_TEST = ${BUILD_TESTS_DIR}/testCheckIn.o
-	NAME_EXECUTABLE = testCheckIn
+SELECTED_TEST = ${BUILD_TESTS_DIR}/testCheckIn.o
+NAME_EXECUTABLE = testCheckIn
 else ifneq ($(filter testComment,$(MAKECMDGOALS)),)
-	SELECTED_TEST = ${BUILD_TESTS_DIR}/testComment.o
-	NAME_EXECUTABLE = testComment
+SELECTED_TEST = ${BUILD_TESTS_DIR}/testComment.o
+NAME_EXECUTABLE = testComment
 else ifneq ($(filter testUser,$(MAKECMDGOALS)),)
-	SELECTED_TEST = ${BUILD_TESTS_DIR}/testUser.o
-	NAME_EXECUTABLE = testUser
+SELECTED_TEST = ${BUILD_TESTS_DIR}/testUser.o
+NAME_EXECUTABLE = testUser
 else ifneq ($(filter testProfile,$(MAKECMDGOALS)),)
-	SELECTED_TEST = ${BUILD_TESTS_DIR}/testProfile.o
-	NAME_EXECUTABLE = testProfile
+SELECTED_TEST = ${BUILD_TESTS_DIR}/testProfile.o
+NAME_EXECUTABLE = testProfile
 else ifneq ($(filter testClubProfile,$(MAKECMDGOALS)),)
-	SELECTED_TEST = ${BUILD_TESTS_DIR}/testClubProfile.o
-	NAME_EXECUTABLE = testClubProfile
+SELECTED_TEST = ${BUILD_TESTS_DIR}/testClubProfile.o
+NAME_EXECUTABLE = testClubProfile
 else ifneq ($(filter testUserProfile,$(MAKECMDGOALS)),)
-	SELECTED_TEST = ${BUILD_TESTS_DIR}/testUserProfile.o
-	NAME_EXECUTABLE = testUserProfile
+SELECTED_TEST = ${BUILD_TESTS_DIR}/testUserProfile.o
+NAME_EXECUTABLE = testUserProfile
+else ifneq ($(filter testReadingMetrics,$(MAKECMDGOALS)),)
+SELECTED_TEST = ${BUILD_TESTS_DIR}/testReadingMetrics.o
+NAME_EXECUTABLE = testReadingMetrics
 else 
-	SELECTED_TEST = ${TESTS_OBJS}
-	NAME_EXECUTABLE = allTests
+SELECTED_TEST = ${TESTS_OBJS}
+NAME_EXECUTABLE = allTests
 endif
 
 
-.PHONY: test testBook testBookClub testCheckIn testComment testUser testProfile testClubProfile testUserProfile
+.PHONY: test testBook testBookClub testCheckIn testComment testUser testProfile testClubProfile testUserProfile testReadingMetrics
 
 test: ${SELECTED_TEST} ${CLASS_OBJS} ${BUILD_TESTS_DIR}/testMain.o
 	${CC} $^ -o ${BUILD_TESTS_DIR}/${NAME_EXECUTABLE}
 	./${BUILD_TESTS_DIR}/${NAME_EXECUTABLE}
 
-testBook testBookClub testCheckIn testComment testUser testProfile testClubProfile testUserProfile:
+testBook testBookClub testCheckIn testComment testUser testProfile testClubProfile testUserProfile testReadingMetrics:
 
 
 
