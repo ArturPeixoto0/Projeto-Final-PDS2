@@ -130,6 +130,11 @@ CheckIn* User::realizarCheckIn(BookClub* club, int page, const std::string& text
         return nullptr; //clube sem leitura atual
     }
 
+    if(it->second->getReading() != livro) {
+        delete it->second;
+        it->second = new ReadingMetrics(livro);
+    }
+
     if(finished == true){
         page = livro->getPages();
     }
