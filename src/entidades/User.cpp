@@ -52,6 +52,10 @@ bool User::checkPassword(const std::string& attempt) const {
 
         //perfil: 
 
+UserProfile& User::getProfile() {
+    return this->profile;
+}
+
 const UserProfile& User::getProfile() const {
     return this->profile;
 }
