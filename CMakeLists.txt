@@ -9,6 +9,7 @@ FetchContent_Declare(ftxui
   GIT_TAG v5.0.0)   # pode conferir se há versão mais nova no GitHub
 FetchContent_MakeAvailable(ftxui)
 
-add_executable(clube_ui src/main_ui.cpp)
+file(GLOB ENTIDADES src/entidades/*.cpp)
+add_executable(clube_ui src/main_ui.cpp ${ENTIDADES})
 target_include_directories(clube_ui PRIVATE include)
 target_link_libraries(clube_ui PRIVATE ftxui::screen ftxui::dom ftxui::component)
