@@ -18,6 +18,8 @@ class CheckIn;
  *
  * Exibe as informações do clube para outros usuários: nome, descrição,
  * foto, membros, leitura atual, feed de check ins e métricas de leitura.
+ *
+ * Assim como o UserProfile, não copia dados: consulta o BookClub dono dele.
  */
 class ClubProfile: public Profile {
 private:
@@ -27,15 +29,18 @@ public:
     ClubProfile(BookClub* club);
 
     std::string getName()const override;
-    std::vector<CheckIn> getAllCheckIn()const;
+    /** @brief Check-ins do feed do clube. */
+    std::vector<CheckIn*> getAllCheckIn()const;
 
-    std::vector<User*> getUsers();
+    std::vector<User*> getUsers()const;
 
-    void showReadingStatus();
-    
+    /** @brief Mostra o ranking de progresso no livro atual, destacando quem terminou (US20/US29). */
+    void showReadingStatus()const;
+
     void show_name()const override;
     void show_pfp()const override;
     void show_description()const override;
+    /** @brief Mostra o feed do mais novo para o mais antigo (US22). */
     void show_checkins()const;
     void show_users()const;
     void show_current_reading()const;
