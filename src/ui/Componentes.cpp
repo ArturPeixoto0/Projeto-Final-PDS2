@@ -25,5 +25,6 @@ Element cardCheckIn(const CheckIn* c){
             text(" " + std::to_string(porcentagem) + "%"),
             text("  pág: " + std::to_string(pagina) + "/" + std::to_string(totalPaginas)),
         }),
+        text("💬 "+ std::to_string(c->getComments().size())) | color(Color::GrayLight),
     }) | borderLight;
 }
