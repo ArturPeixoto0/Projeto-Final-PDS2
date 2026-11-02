@@ -10,6 +10,7 @@ FetchContent_Declare(ftxui
 FetchContent_MakeAvailable(ftxui)
 
 file(GLOB ENTIDADES src/entidades/*.cpp)
-add_executable(clube_ui src/main_ui.cpp ${ENTIDADES})
+file(GLOB UI src/ui/*.cpp)
+add_executable(clube_ui src/main_ui.cpp ${ENTIDADES} ${UI})
 target_include_directories(clube_ui PRIVATE include)
 target_link_libraries(clube_ui PRIVATE ftxui::screen ftxui::dom ftxui::component)
