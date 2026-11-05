@@ -21,22 +21,16 @@ std::string Profile::getHeaderPath() const {
 
 bool Profile::setDescription(const std::string& description) {
     if ((int)description.size() > MAX_DESCRIPTION_LENGTH) {
-        return false;
+        throw std::out_of_range("Descrição excede o tamanho permitido");
     }
     this->Description = description;
     return true;
 }
 
 void Profile::setPhotoPath(const std::string& path) {
-    if (path.empty() == true){
-        throw std::invalid_argument("Caminho vazio");
-    }
     this->PhotoPath = path;
 }
 
 void Profile::setHeaderPath(const std::string& path) {
-    if (path.empty() == true){
-        throw std::invalid_argument("Caminho vazio");
-    }
     this->HeaderPath = path;
 }
