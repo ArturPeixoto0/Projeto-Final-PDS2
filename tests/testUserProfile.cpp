@@ -16,9 +16,14 @@
 #include "Book.hpp"
 #include "CheckIn.hpp"
 #include <type_traits>
+#include <stdexcept>
 
 TEST_CASE("UserProfile: é um Profile") {
     CHECK(std::is_base_of<Profile, UserProfile>::value);
+}
+
+TEST_CASE("UserProfile: Construtor recebendo ponteiro nulo") {
+    CHECK_THROWS_AS(UserProfile(nullptr), std::invalid_argument);
 }
 
 TEST_CASE("UserProfile: getName pelo ponteiro de Profile chama a versão do UserProfile") {

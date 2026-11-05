@@ -21,6 +21,7 @@
 #include <string>
 #include <type_traits>
 #include <vector>
+#include <stdexcept>
 
 /*
  * Desvia tudo que for escrito no std::cout para uma string.
@@ -82,6 +83,10 @@ TEST_CASE("ClubProfile: é um Profile") {
     CHECK(std::is_base_of<Profile, ClubProfile>::value);
 }
 
+TEST_CASE("ClubProfile: Construtor recebendo ponteiro nulo") {
+    CHECK_THROWS_AS(ClubProfile(nullptr), std::invalid_argument);
+}
+
 TEST_CASE_FIXTURE(CenarioClube, "ClubProfile: getName funciona via referência à classe base") {
     Profile& base = perfil;
     CHECK(base.getName() == "Clube das Leitoras");
@@ -124,7 +129,7 @@ TEST_CASE_FIXTURE(CenarioClube, "ClubProfile: setDescription altera a descriçã
 TEST_CASE_FIXTURE(CenarioClube, "ClubProfile: descrição acima do limite é recusada") {
     perfil.setDescription("original");
     std::string grande(Profile::MAX_DESCRIPTION_LENGTH + 1, 'a');
-    CHECK_FALSE(perfil.setDescription(grande));
+    CHECK_THROWS_AS(perfil.setDescription(grande), std::length_error);
     CHECK(perfil.getDescription() == "original");
 }
 
@@ -217,9 +222,10 @@ TEST_CASE_FIXTURE(CenarioClube, "ClubProfile: show_checkins sem check-ins avisa 
 }
 
 TEST_CASE_FIXTURE(CenarioLeitura, "ClubProfile: show_checkins mostra do mais novo para o mais antigo (US22)") {
+    CapturaSaida saida;
     ana.realizarCheckIn(&clube, 50, "primeiro");
     bia.realizarCheckIn(&clube, 30, "segundo");
-    CapturaSaida saida;
+    
     perfil.show_checkins();
     std::string texto = saida.str();
     REQUIRE(texto.find("primeiro") != std::string::npos);
@@ -242,9 +248,11 @@ TEST_CASE_FIXTURE(CenarioLeitura, "ClubProfile: show_current_reading exibe títu
 }
 
 TEST_CASE_FIXTURE(CenarioLeitura, "ClubProfile: show_metrics mostra membros e páginas lidas") {
+    CapturaSaida saida;
+    
     ana.realizarCheckIn(&clube, 50, "a");
     bia.realizarCheckIn(&clube, 30, "b");
-    CapturaSaida saida;
+    
     perfil.show_metrics();
     std::string texto = saida.str();
     CHECK(texto.find("Membros: 3") != std::string::npos);
@@ -258,9 +266,11 @@ TEST_CASE_FIXTURE(CenarioClube, "ClubProfile: showReadingStatus sem leitura avis
 }
 
 TEST_CASE_FIXTURE(CenarioLeitura, "ClubProfile: showReadingStatus ordena o ranking e marca quem terminou (US20/US29)") {
+    CapturaSaida saida;
+    
     bia.realizarCheckIn(&clube, 100, "indo");
     ana.realizarCheckIn(&clube, 0, "Terminei!", true);
-    CapturaSaida saida;
+    
     perfil.showReadingStatus();
     std::string texto = saida.str();
     CHECK(texto.find("1. Ana") != std::string::npos);
