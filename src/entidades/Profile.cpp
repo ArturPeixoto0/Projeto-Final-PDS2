@@ -1,5 +1,6 @@
 #include "Profile.hpp"
 #include <string>
+#include <stdexcept>
 
 // Definição da constante declarada no .hpp (necessária se ela for usada por referência).
 const int Profile::MAX_DESCRIPTION_LENGTH;
@@ -27,9 +28,15 @@ bool Profile::setDescription(const std::string& description) {
 }
 
 void Profile::setPhotoPath(const std::string& path) {
+    if (path.empty() == true){
+        throw std::invalid_argument("Caminho vazio");
+    }
     this->PhotoPath = path;
 }
 
 void Profile::setHeaderPath(const std::string& path) {
+    if (path.empty() == true){
+        throw std::invalid_argument("Caminho vazio");
+    }
     this->HeaderPath = path;
 }
