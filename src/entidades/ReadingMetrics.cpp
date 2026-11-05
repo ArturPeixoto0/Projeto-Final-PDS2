@@ -3,13 +3,13 @@
 #include <stdexcept>
 
 ReadingMetrics::ReadingMetrics(Book* reading){
-if (reading == nullptr){
-    throw std::invalid_argument("Ponteiro nulo");
-}
-this->reading = reading;
-currentPage = 0;
-grade = -1; 
-finished = false;
+    if (reading == nullptr){
+        throw std::invalid_argument("Ponteiro nulo");
+    }
+    this->reading = reading;
+    currentPage = 0;   
+    grade = -1; 
+    finished = false;
 }
 
 Book* ReadingMetrics::getReading(){
@@ -24,7 +24,7 @@ void ReadingMetrics::addPages(int pages){
     if (pages < 0){
         throw std::invalid_argument("Número de páginas negativo");
     }
-    else if (pages = 0){
+    else if (pages == 0){
         throw std::invalid_argument("Número de páginas igual a zero");
     }
     else if (currentPage+pages > reading->getPages()){
