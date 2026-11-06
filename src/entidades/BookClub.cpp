@@ -182,9 +182,10 @@ int BookClub::getReadPages() const {
 }
 
 void BookClub::setReadPages(int pages) {
-    if (pages >= 0) {
-        this->readPages_ = pages;
+    if (pages < 0) {
+        throw std::invalid_argument("Total de paginas lidas nao pode ser negativo");
     }
+    this->readPages_ = pages;
 }
 
 int BookClub::getReadBooks() const {
@@ -352,7 +353,10 @@ bool BookClub::isMember(const User* user) const {
 }
 
 bool BookClub::entrarNoClube(User* user, const std::string& codigo) {
-    if (user == nullptr || !this->active_ || this->isMember(user)) {
+    if (user == nullptr) {
+        throw std::invalid_argument("Ponteiro de usuario nulo");
+    }
+    if (!this->active_ || this->isMember(user)) {
         return false;
     }
     if (this->isPrivate_ && codigo != this->inviteCode_) {
@@ -369,6 +373,9 @@ bool BookClub::entrarNoClube(User* user, const std::string& codigo) {
 }
 
 bool BookClub::sairDoClube(User* user) {
+    if (user == nullptr) {
+        throw std::invalid_argument("Ponteiro de usuario nulo");
+    }
     if (!this->isMember(user)) {
         return false;
     }
@@ -397,7 +404,7 @@ bool BookClub::sairDoClube(User* user) {
 
 bool BookClub::adicionarCheckIn(CheckIn* checkIn) {
     if (checkIn == nullptr) {
-        return false;
+        throw std::invalid_argument("Ponteiro de check-in nulo");
     }
     if (checkIn->getClub() != this) {
         return false;
@@ -430,7 +437,7 @@ void BookClub::eraseCheckIn(CheckIn* checkIn) {
 
 bool BookClub::adicionarLivro(Book* livro) {
     if (livro == nullptr) {
-        return false;
+        throw std::invalid_argument("Ponteiro de livro nulo");
     }
     if (indiceNoCatalogo(this->catalog_, livro) != -1) {
         return false;
@@ -444,6 +451,9 @@ bool BookClub::adicionarLivro(Book* livro) {
 }
 
 bool BookClub::removerLivro(Book* livro) {
+    if (livro == nullptr) {
+        throw std::invalid_argument("Ponteiro de livro nulo");
+    }
     int indice = indiceNoCatalogo(this->catalog_, livro);
     if (indice == -1) {
         return false;
@@ -459,14 +469,20 @@ bool BookClub::removerLivro(Book* livro) {
 }
 
 bool BookClub::avaliarLivro(User* user, Book* livro, int nota) {
+    if (user == nullptr) {
+        throw std::invalid_argument("Ponteiro de usuario nulo");
+    }
+    if (livro == nullptr) {
+        throw std::invalid_argument("Ponteiro de livro nulo");
+    }
+    if (nota < 1 || nota > 5) {
+        throw std::invalid_argument("Nota deve ser de 1 a 5");
+    }
     if (!this->isMember(user)) {
         return false;
     }
     int indice = indiceNoCatalogo(this->catalog_, livro);
     if (indice == -1 || this->catalog_[indice].status != Status::Passado) {
-        return false;
-    }
-    if (nota < 1 || nota > 5) {
         return false;
     }
 
@@ -476,6 +492,12 @@ bool BookClub::avaliarLivro(User* user, Book* livro, int nota) {
 }
 
 bool BookClub::votarProximaLeitura(User* user, Book* livro) {
+    if (user == nullptr) {
+        throw std::invalid_argument("Ponteiro de usuario nulo");
+    }
+    if (livro == nullptr) {
+        throw std::invalid_argument("Ponteiro de livro nulo");
+    }
     if (!this->isMember(user)) {
         return false;
     }
@@ -503,6 +525,9 @@ bool BookClub::isAdmin(const User* user) const {
 }
 
 std::string BookClub::criarConvite(User* actor) {
+    if (actor == nullptr) {
+        throw std::invalid_argument("Ponteiro de usuario nulo");
+    }
     if (!this->isAdmin(actor)) {
         return "";
     }
@@ -512,10 +537,13 @@ std::string BookClub::criarConvite(User* actor) {
 }
 
 bool BookClub::removerMembro(User* actor, User* alvo) {
+    if (actor == nullptr || alvo == nullptr) {
+        throw std::invalid_argument("Ponteiro de usuario nulo");
+    }
     if (!this->isAdmin(actor)) {
         return false;
     }
-    if (alvo == nullptr || !this->isMember(alvo) || alvo == this->admin_) {
+    if (!this->isMember(alvo) || alvo == this->admin_) {
         return false;
     }
 
@@ -528,6 +556,12 @@ bool BookClub::removerMembro(User* actor, User* alvo) {
 }
 
 bool BookClub::decidirProximaLeitura(User* actor, Book* livro) {
+    if (actor == nullptr) {
+        throw std::invalid_argument("Ponteiro de usuario nulo");
+    }
+    if (livro == nullptr) {
+        throw std::invalid_argument("Ponteiro de livro nulo");
+    }
     if (!this->isAdmin(actor)) {
         return false;
     }
@@ -555,6 +589,9 @@ bool BookClub::decidirProximaLeitura(User* actor, Book* livro) {
 }
 
 bool BookClub::alterarPrivacidade(User* actor, bool isPrivate) {
+    if (actor == nullptr) {
+        throw std::invalid_argument("Ponteiro de usuario nulo");
+    }
     if (!this->isAdmin(actor)) {
         return false;
     }
@@ -563,7 +600,13 @@ bool BookClub::alterarPrivacidade(User* actor, bool isPrivate) {
 }
 
 bool BookClub::renomear(User* actor, const std::string& novoNome) {
-    if (!this->isAdmin(actor) || novoNome.empty()) {
+    if (actor == nullptr) {
+        throw std::invalid_argument("Ponteiro de usuario nulo");
+    }
+    if (novoNome.empty()) {
+        throw std::invalid_argument("Clube precisa de um nome");
+    }
+    if (!this->isAdmin(actor)) {
         return false;
     }
     this->name_ = novoNome;
@@ -571,7 +614,13 @@ bool BookClub::renomear(User* actor, const std::string& novoNome) {
 }
 
 bool BookClub::apagarCheckIn(User* actor, CheckIn* checkIn) {
-    if (!this->isAdmin(actor) || checkIn == nullptr) {
+    if (actor == nullptr) {
+        throw std::invalid_argument("Ponteiro de usuario nulo");
+    }
+    if (checkIn == nullptr) {
+        throw std::invalid_argument("Ponteiro de check-in nulo");
+    }
+    if (!this->isAdmin(actor)) {
         return false;
     }
 
@@ -592,7 +641,13 @@ bool BookClub::apagarCheckIn(User* actor, CheckIn* checkIn) {
 }
 
 bool BookClub::definirTempoLeitura(User* actor, int dias) {
-    if (!this->isAdmin(actor) || !this->isReading() || dias <= 0) {
+    if (actor == nullptr) {
+        throw std::invalid_argument("Ponteiro de usuario nulo");
+    }
+    if (dias <= 0) {
+        throw std::invalid_argument("Tempo de leitura deve ser maior que zero");
+    }
+    if (!this->isAdmin(actor) || !this->isReading()) {
         return false;
     }
     this->endReading_ = this->startReading_ + (std::time_t)dias * SEGUNDOS_POR_DIA;
@@ -600,7 +655,13 @@ bool BookClub::definirTempoLeitura(User* actor, int dias) {
 }
 
 bool BookClub::apagarComentario(User* actor, Comment* comentario) {
-    if (!this->isAdmin(actor) || comentario == nullptr) {
+    if (actor == nullptr) {
+        throw std::invalid_argument("Ponteiro de usuario nulo");
+    }
+    if (comentario == nullptr) {
+        throw std::invalid_argument("Ponteiro de comentario nulo");
+    }
+    if (!this->isAdmin(actor)) {
         return false;
     }
     if (comentario->get_club() != this) {
@@ -623,10 +684,13 @@ bool BookClub::apagarComentario(User* actor, Comment* comentario) {
 }
 
 bool BookClub::transferirAdmin(User* actor, User* alvo) {
+    if (actor == nullptr || alvo == nullptr) {
+        throw std::invalid_argument("Ponteiro de usuario nulo");
+    }
     if (!this->isAdmin(actor)) {
         return false;
     }
-    if (alvo == nullptr || !this->isMember(alvo) || alvo == this->admin_) {
+    if (!this->isMember(alvo) || alvo == this->admin_) {
         return false;
     }
     this->admin_ = alvo;
