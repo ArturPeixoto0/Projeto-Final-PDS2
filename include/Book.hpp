@@ -35,14 +35,17 @@ class Book {
          * @param genre Gênero literário.
          * @param pages Número total de páginas.
          * @param ISBN Código ISBN do livro.
+         * @throws std::invalid_argument se o título for vazio ou se pages
+         *         for menor ou igual a zero.
          */
-        Book(std::string title,   
+        Book(std::string title,
         std::string author,
         std::string genre,
         int pages,
         std::string ISBN
-        ); 
+        );
 
+        /** @throws std::invalid_argument se o título for vazio. */
         void setTitle(const std::string title);
         std::string getTitle() const;
 
@@ -52,6 +55,7 @@ class Book {
         void setGenre(const std::string genre);
         std::string getGenre() const;
 
+        /** @throws std::invalid_argument se pages for menor ou igual a zero. */
         void setPages(int pages);
         int getPages() const;
 
@@ -63,4 +67,4 @@ class Book {
 };
 
 
-#endif
+#endifvvvv
