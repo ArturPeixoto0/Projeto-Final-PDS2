@@ -220,6 +220,38 @@ TEST_CASE("BookClub: destrutor do clube tira o clube da lista dos membros") {
     CHECK(raquel.getCurrentClubs().empty());
 }
 
+// Entrar em clube sem leitura atual não pode lançar exceção: a métrica de
+// leitura só é criada no primeiro check-in, quando o clube já tem um livro.
+TEST_CASE_FIXTURE(CenarioClube, "BookClub: entrar em clube sem leitura atual funciona") {
+    REQUIRE(clube.getCurrentReading() == nullptr);
+    CHECK_NOTHROW(artur.entrarClube(&clube));
+    CHECK(artur.participaDe(&clube));
+    CHECK(artur.getCurrentPage(&clube) == 0);   // participa, mas ainda sem check-in
+}
+
+TEST_CASE_FIXTURE(CenarioClube, "BookClub: quem entrou sem leitura faz check-in depois que o clube escolhe o livro") {
+    artur.entrarClube(&clube);
+    clube.adicionarLivro(&livro1);
+    clube.decidirProximaLeitura(&admin, &livro1);
+
+    CHECK(artur.realizarCheckIn(&clube, 50, "Começando") != nullptr);
+    CHECK(artur.getCurrentPage(&clube) == 50);
+    CHECK(artur.getTotalPages() == 50);
+}
+
+TEST_CASE_FIXTURE(CenarioClube, "BookClub: quando o clube troca de livro, a página do membro recomeça") {
+    clube.adicionarLivro(&livro1);
+    clube.adicionarLivro(&livro2);
+    clube.decidirProximaLeitura(&admin, &livro1);
+    raquel.realizarCheckIn(&clube, 50, "Começando");
+
+    clube.decidirProximaLeitura(&admin, &livro2);
+    raquel.realizarCheckIn(&clube, 10, "Livro novo");
+
+    CHECK(raquel.getCurrentPage(&clube) == 10);   // conta do zero no livro novo
+    CHECK(raquel.getTotalPages() == 60);          // o paginômetro não zera
+}
+
 TEST_CASE("BookClub: clube privado aceita quem tem o código certo") {
     User admin("Admin", "admin@email.com", "senha123");
     User raquel("Raquel", "raquel@email.com", "senha123");
