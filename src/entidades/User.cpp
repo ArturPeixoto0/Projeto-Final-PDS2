@@ -119,14 +119,19 @@ bool User::entrarClube(BookClub* club, const std::string& codigo) {
         return false;
     }
 
-    if (!club->isMember(this)) {
-        if(club->entrarNoClube(this, codigo)){
-            this->currentClubs.push_back(club);
-            allMetrics.insert(std::pair<BookClub*, ReadingMetrics*>(club, new ReadingMetrics(club->getCurrentReading())));
-            return true;
-        }
+    // O clube já tem este User como membro: a chamada veio do próprio clube
+    // (BookClub::entrarNoClube ou o construtor, no caso do fundador).
+    // Falta só o lado do User. A métrica de leitura não é criada aqui, porque
+    // o clube pode ainda não ter leitura atual; ela é criada no primeiro
+    // check-in (ver realizarCheckIn).
+    if (club->isMember(this)) {
+        this->currentClubs.push_back(club);
+        return true;
     }
-    return false;
+
+    // Chamada veio de fora: pede ao clube para entrar. O clube confere o
+    // código, se adiciona e chama de volta este método (o caso de cima).
+    return club->entrarNoClube(this, codigo);
 }
 
 bool User::sairClube(BookClub* club) {
@@ -138,19 +143,26 @@ bool User::sairClube(BookClub* club) {
         return false;
     }
 
+    // Chamada veio de fora: pede ao clube para sair. O clube pode recusar
+    // (admin com outros membros). Se aceitar, ele chama de volta este método,
+    // que cai no caso de baixo.
     if (club->isMember(this)) {
-        if (club->sairDoClube(this)) {
-            auto it = std::find(this->currentClubs.begin(), this->currentClubs.end(), club);
-            if (it != this->currentClubs.end())
-                this->currentClubs.erase(it);
-
-            delete allMetrics[club];
-            allMetrics.erase(club);
-            return true;
-        }
+        return club->sairDoClube(this);
     }
-    return false;
-    
+
+    // O clube já tirou este User (sairDoClube, removerMembro ou o destrutor
+    // do clube): falta só o lado do User.
+    auto it = std::find(this->currentClubs.begin(), this->currentClubs.end(), club);
+    if (it != this->currentClubs.end()) {
+        this->currentClubs.erase(it);
+    }
+
+    auto metrica = allMetrics.find(club);
+    if (metrica != allMetrics.end()) {
+        delete metrica->second;
+        allMetrics.erase(metrica);
+    }
+    return true;
 }
 
         //check-ins e comentarios:
@@ -162,13 +174,15 @@ int User::getCurrentPage(const BookClub* club) const {
         throw std::invalid_argument("Ponteiro de clube do livro inválido");
     }
 
-    auto it = allMetrics.find(const_cast<BookClub*>(club));
-
-    if (it != allMetrics.end()){
-        return it->second->getCurrentPage();
+    if (!this->participaDe(club)) {
+        return -1; //user n ta no club
     }
 
-    return -1; //user n ta no club
+    auto it = allMetrics.find(const_cast<BookClub*>(club));
+    if (it == allMetrics.end()) {
+        return 0; //participa, mas ainda não fez check-in
+    }
+    return it->second->getCurrentPage();
 }
 
 CheckIn* User::realizarCheckIn(BookClub* club, int page, const std::string& text, bool finished){
@@ -176,9 +190,7 @@ CheckIn* User::realizarCheckIn(BookClub* club, int page, const std::string& text
         throw std::invalid_argument("Ponteiro de clube do livro inválido");
     }
 
-    auto it = allMetrics.find(const_cast<BookClub*>(club));
-
-    if(it == allMetrics.end()){
+    if (!this->participaDe(club)) {
         return nullptr; //usuário nao esta no clube
     }
     Book* livro = club->getCurrentReading();
@@ -187,6 +199,14 @@ CheckIn* User::realizarCheckIn(BookClub* club, int page, const std::string& text
         return nullptr; //clube sem leitura atual
     }
 
+    // Primeiro check-in neste clube: cria a métrica agora que existe livro.
+    auto it = allMetrics.find(club);
+    if (it == allMetrics.end()) {
+        allMetrics.insert(std::pair<BookClub*, ReadingMetrics*>(club, new ReadingMetrics(livro)));
+        it = allMetrics.find(club);
+    }
+
+    // O clube trocou de livro desde o último check-in: começa do zero.
     if(it->second->getReading() != livro) {
         delete it->second;
         it->second = new ReadingMetrics(livro);
