@@ -25,7 +25,6 @@ Element telaUsuario(const UserProfile& usuario){
     }
 
     return vbox({
-        separator(),
         text(usuario.getName()),
         text(usuario.getDescription()),
         hbox({
@@ -52,8 +51,9 @@ Element telaUsuario(const UserProfile& usuario){
             text("CHECK-INS RECENTES") | bold,
             vbox(checkins),
             }),
-
-        separator(),
-        text("←→ abas · ↑↓ navegar · e: editar perfil · q: sair"),
     });
+}
+
+Element rodapeUsuario() {
+    return text("←→ abas · ↑↓ navegar · e: editar perfil · q: sair") | color(Color::GrayLight);
 }

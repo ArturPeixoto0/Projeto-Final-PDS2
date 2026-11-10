@@ -21,9 +21,10 @@ Element telaFeed(const User* usuario){
     }
 
     return vbox({
-        separator(),
         vbox(cards),
-        separator(),
-        hbox(text("←→ abas · ↑↓ navegar · n: novo check-in · c: comentar · q: sair")),
     });
+}
+
+Element rodapeFeed() {
+    return text("←→ abas · ↑↓ navegar · n: novo check-in · c: comentar · q: sair") | color(Color::GrayLight);
 }
