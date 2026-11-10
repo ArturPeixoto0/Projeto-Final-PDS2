@@ -24,9 +24,13 @@ class Book {
         std::string author;
         std::string genre;
         int pages;
-        std::string ISBN;   
-    
-    public: 
+        std::string ISBN;
+        int id; ///< Identificador único do livro (usado nos arquivos de dados).
+
+        /// Próximo id a ser gerado. É static: um só contador para todos os livros.
+        static int proximoId;
+
+    public:
 
         /**
          * @brief Cria um livro.
@@ -35,15 +39,22 @@ class Book {
          * @param genre Gênero literário.
          * @param pages Número total de páginas.
          * @param ISBN Código ISBN do livro.
-         * @throws std::invalid_argument se o título for vazio ou se pages
-         *         for menor ou igual a zero.
+         * @param id Identificador do livro. Se for 0 (padrão), um id novo é
+         *        gerado. Se for maior que 0, esse id é usado (ao carregar dos
+         *        arquivos) e os próximos ids gerados serão maiores que ele.
+         * @throws std::invalid_argument se o título for vazio, se pages
+         *         for menor ou igual a zero ou se id for negativo.
          */
         Book(std::string title,
         std::string author,
         std::string genre,
         int pages,
-        std::string ISBN
+        std::string ISBN,
+        int id = 0
         );
+
+        /** @brief Retorna o identificador único do livro. */
+        int getId() const;
 
         /** @throws std::invalid_argument se o título for vazio. */
         void setTitle(const std::string title);
