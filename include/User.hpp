@@ -115,6 +115,15 @@ class User {
     
         bool apagarCheckIn(CheckIn* checkIn);
 
+        /**
+         * @brief Comenta em um check-in. O comentário entra na lista do
+         *        check-in, que passa a ser dono dele.
+         * @param checkIn Check-in comentado.
+         * @param text Texto do comentário (1 a Comment::MAX_LENGTH caracteres).
+         * @return O comentário criado, ou nullptr se checkIn for nulo, se o
+         *         usuário não participar do clube do check-in ou se o texto
+         *         for inválido.
+         */
         Comment* comentar(CheckIn* checkIn, const std::string& text);
     
         //livros: 

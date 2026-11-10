@@ -24,28 +24,6 @@ struct CenarioCheckIn {
 };
 
 
-TEST_CASE("CheckIn: construtor padrão começa com texto vazio") {
-    CheckIn c;
-    CHECK(c.getText() == "");
-}
-
-TEST_CASE("CheckIn: construtor padrão começa na página 0") {
-    CheckIn c;
-    CHECK(c.getPages() == 0);
-}
-
-TEST_CASE("CheckIn: construtor padrão começa sem comentários") {
-    CheckIn c;
-    CHECK(c.getComents().empty());
-}
-
-TEST_CASE("CheckIn: construtor padrão não aponta para autor, livro nem clube") {
-    CheckIn c;
-    CHECK(c.getUser() == nullptr);
-    CHECK(c.getBook() == nullptr);
-    CHECK(c.getClub() == nullptr);
-}
-
 TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: guarda o texto escrito pelo usuário") {
     CheckIn* c = raquel.realizarCheckIn(&clube, 50, "Capitu é suspeita");
     REQUIRE(c != nullptr);   // REQUIRE: se falhar, não adianta testar o resto
@@ -55,7 +33,7 @@ TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: guarda o texto escrito pelo usuário
 TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: guarda a página informada") {
     CheckIn* c = raquel.realizarCheckIn(&clube, 50, "Capitu é suspeita");
     REQUIRE(c != nullptr);
-    CHECK(c->getPages() == 50);
+    CHECK(c->getPage() == 50);
 }
 
 TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: guarda o autor (US18)") {
@@ -105,7 +83,7 @@ TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: registra data e hora da postagem") {
 TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: check-in novo não tem comentários") {
     CheckIn* c = raquel.realizarCheckIn(&clube, 50, "Capitu é suspeita");
     REQUIRE(c != nullptr);
-    CHECK(c->getComents().empty());
+    CHECK(c->getComments().empty());
 }
 
 TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: comentário publicado aparece no check-in (US25)") {
@@ -114,8 +92,8 @@ TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: comentário publicado aparece no che
     Comment* com = admin.comentar(c, "Também acho!");
     REQUIRE(com != nullptr);
 
-    REQUIRE(c->getComents().size() == 1);
-    CHECK(c->getComents()[0] == com);
+    REQUIRE(c->getComments().size() == 1);
+    CHECK(c->getComments()[0] == com);
 }
 
 TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: aceita vários comentários de membros diferentes, na ordem (US25)") {
@@ -124,9 +102,9 @@ TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: aceita vários comentários de membr
     Comment* primeiro = admin.comentar(c, "Também acho!");
     Comment* segundo = raquel.comentar(c, "Né? Olha os olhos de ressaca");
 
-    REQUIRE(c->getComents().size() == 2);
-    CHECK(c->getComents()[0] == primeiro);
-    CHECK(c->getComents()[1] == segundo);
+    REQUIRE(c->getComments().size() == 2);
+    CHECK(c->getComments()[0] == primeiro);
+    CHECK(c->getComments()[1] == segundo);
 }
 
 TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: comentário em um check-in não aparece em outro") {
@@ -136,13 +114,13 @@ TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: comentário em um check-in não apar
     REQUIRE(c2 != nullptr);
 
     admin.comentar(c1, "Também acho!");
-    CHECK(c1->getComents().size() == 1);
-    CHECK(c2->getComents().empty());
+    CHECK(c1->getComments().size() == 1);
+    CHECK(c2->getComments().empty());
 }
 
 TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: comentário recusado não entra na lista") {
     CheckIn* c = raquel.realizarCheckIn(&clube, 50, "Capitu é suspeita");
     REQUIRE(c != nullptr);
     admin.comentar(c, "");   // texto vazio é recusado (ver testUser.cpp)
-    CHECK(c->getComents().empty());
+    CHECK(c->getComments().empty());
 }

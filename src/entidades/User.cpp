@@ -255,12 +255,24 @@ bool User::apagarCheckIn(CheckIn* checkIn){
 }
 
 Comment* User::comentar(CheckIn* checkIn, const std::string& text){
-    if (checkIn != nullptr){
+    if (checkIn == nullptr){
+        return nullptr;
+    }
+
+    // Só membros do clube podem comentar nos check-ins dele (US25).
+    if (!this->participaDe(checkIn->getClub())) {
+        return nullptr;
+    }
+
+    // O construtor do Comment lança invalid_argument se o texto for vazio
+    // ou passar do limite. Aqui isso vira "comentário recusado" (nullptr).
+    try {
         Comment* novo = new Comment(text, this, checkIn, checkIn->getClub());
         checkIn->getComments().push_back(novo);
         return novo;
+    } catch (std::invalid_argument& e) {
+        return nullptr;
     }
-    return nullptr;   
 }
     
         //livros: 
