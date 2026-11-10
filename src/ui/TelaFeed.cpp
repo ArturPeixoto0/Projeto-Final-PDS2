@@ -26,5 +26,5 @@ Element telaFeed(const User* usuario){
 }
 
 Element rodapeFeed() {
-    return text("←→ abas · ↑↓ navegar · n: novo check-in · c: comentar · q: sair") | color(Color::GrayLight);
-}
+    return text("←→ abas · ↑↓ navegar · n: novo check-in · c: novo clube · m: comentários · Tab: próximo campo · q: sair") | color(Color::GrayLight);
+}
