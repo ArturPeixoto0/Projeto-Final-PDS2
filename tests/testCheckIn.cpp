@@ -4,6 +4,7 @@
 #include "User.hpp"
 #include "BookClub.hpp"
 #include "Book.hpp"
+#include <stdexcept>
 
 
 struct CenarioCheckIn {
@@ -123,4 +124,44 @@ TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: comentário recusado não entra na l
     REQUIRE(c != nullptr);
     admin.comentar(c, "");   // texto vazio é recusado (ver testUser.cpp)
     CHECK(c->getComments().empty());
+}
+//exceções:
+// O construtor é chamado direto (sem realizarCheckIn) para testar só a
+// validação do CheckIn.
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: construtor com usuário nullptr lança exceção") {
+    CHECK_THROWS_AS(CheckIn(nullptr, &livro, &clube, 10), std::invalid_argument);
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: construtor com livro nullptr lança exceção") {
+    CHECK_THROWS_AS(CheckIn(&raquel, nullptr, &clube, 10), std::invalid_argument);
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: construtor com clube nullptr lança exceção") {
+    CHECK_THROWS_AS(CheckIn(&raquel, &livro, nullptr, 10), std::invalid_argument);
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: construtor com página 0 lança exceção") {
+    CHECK_THROWS_AS(CheckIn(&raquel, &livro, &clube, 0), std::invalid_argument);
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: construtor com página negativa lança exceção") {
+    CHECK_THROWS_AS(CheckIn(&raquel, &livro, &clube, -5), std::invalid_argument);
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: construtor com página maior que o livro lança exceção") {
+    // livro tem 300 páginas
+    CHECK_THROWS_AS(CheckIn(&raquel, &livro, &clube, 301), std::invalid_argument);
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: primeira e última página do livro são aceitas") {
+    CHECK_NOTHROW(CheckIn(&raquel, &livro, &clube, 1));
+    CHECK_NOTHROW(CheckIn(&raquel, &livro, &clube, 300));
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: realizarCheckIn com página inválida lança exceção e não muda nada") {
+    CHECK_THROWS_AS(raquel.realizarCheckIn(&clube, 301, "passei do fim"), std::invalid_argument);
+    CHECK(raquel.getAllCheckIns().empty());
+    CHECK(clube.getFeed().empty());
+    CHECK(raquel.getTotalPages() == 0);
+    CHECK(clube.getReadPages() == 0);
 }
