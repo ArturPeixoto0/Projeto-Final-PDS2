@@ -79,19 +79,42 @@ static const int SEGUNDOS_POR_DIA = 24 * 60 * 60;
 // Construtores e destrutor
 // =====================================================================
 
+// Definição do contador static declarado no .hpp. Os ids começam em 1,
+// porque 0 significa "gere um id novo" no construtor.
+int BookClub::proximoId_ = 1;
+
 BookClub::BookClub(User* founder,
                    const std::string& name,
                    const std::string& type,
-                   bool isPrivate)
+                   bool isPrivate,
+                   int id)
     : name_(name), type_(type), inviteCode_(""), isPrivate_(isPrivate),
       active_(true), admin_(founder), readPages_(0), readBooks_(0),
-      clubCreation_(std::time(nullptr)), startReading_(0), endReading_(0) {
+      clubCreation_(std::time(nullptr)), startReading_(0), endReading_(0),
+      id_(0) {
     if (founder == nullptr) {
         throw std::invalid_argument("Clube precisa de um fundador");
     }
     if (name.empty()) {
         throw std::invalid_argument("Clube precisa de um nome");
     }
+    if (id < 0) {
+        throw std::invalid_argument("Id do clube nao pode ser negativo");
+    }
+
+    // O id só é definido depois das validações: se o construtor lançar
+    // exceção, nenhum id é gasto.
+    if (id == 0) {
+        this->id_ = proximoId_;
+        proximoId_++;
+    } else {
+        this->id_ = id;
+        // Garante que um id gerado depois nunca repita o id informado.
+        if (id >= proximoId_) {
+            proximoId_ = id + 1;
+        }
+    }
+
     this->members_.push_back(founder);
     this->inviteCode_ = gerarCodigo();
 
@@ -104,8 +127,9 @@ BookClub::BookClub(User* founder,
                    const std::string& name,
                    Book* firstReading,
                    const std::string& type,
-                   bool isPrivate)
-    : BookClub(founder, name, type, isPrivate) {
+                   bool isPrivate,
+                   int id)
+    : BookClub(founder, name, type, isPrivate, id) {
     if (firstReading != nullptr) {
         this->adicionarLivro(firstReading);
         this->decidirProximaLeitura(founder, firstReading);
@@ -128,6 +152,10 @@ BookClub::~BookClub() {
 // =====================================================================
 // Getters
 // =====================================================================
+
+int BookClub::getId() const {
+    return this->id_;
+}
 
 const std::string& BookClub::getName() const {
     return this->name_;

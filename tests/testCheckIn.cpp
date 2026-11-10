@@ -165,3 +165,37 @@ TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: realizarCheckIn com página inválid
     CHECK(raquel.getTotalPages() == 0);
     CHECK(clube.getReadPages() == 0);
 }
+
+// IDs: o contador proximoId é compartilhado por todos os testes, então os
+// testes comparam ids entre si em vez de esperar números fixos (como 1, 2...).
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: check-ins criados sem id recebem ids diferentes e crescentes") {
+    CheckIn* primeiro = raquel.realizarCheckIn(&clube, 50, "Capitu é suspeita");
+    CheckIn* segundo = raquel.realizarCheckIn(&clube, 80, "Bentinho ciumento");
+    REQUIRE(primeiro != nullptr);
+    REQUIRE(segundo != nullptr);
+    CHECK(primeiro->getId() > 0);
+    CHECK(segundo->getId() > primeiro->getId());
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: construtor respeita o id informado") {
+    CheckIn c(&raquel, &livro, &clube, 50, "Capitu é suspeita", 5000);
+    CHECK(c.getId() == 5000);
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: id gerado depois de um id informado é maior que ele") {
+    CheckIn carregado(&raquel, &livro, &clube, 50, "Capitu é suspeita", 7000);
+    CheckIn novo(&raquel, &livro, &clube, 80, "Bentinho ciumento");
+    CHECK(novo.getId() > carregado.getId());
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: construtor com id negativo lança exceção") {
+    CHECK_THROWS_AS(CheckIn(&raquel, &livro, &clube, 50, "texto", -1), std::invalid_argument);
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: construtor que lança exceção não gasta id") {
+    CheckIn antes(&raquel, &livro, &clube, 50, "texto");
+    CHECK_THROWS_AS(CheckIn(&raquel, &livro, &clube, 0, "texto"), std::invalid_argument);
+    CheckIn depois(&raquel, &livro, &clube, 60, "texto");
+    CHECK(depois.getId() == antes.getId() + 1);
+}

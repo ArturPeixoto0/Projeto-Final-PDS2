@@ -146,3 +146,42 @@ TEST_CASE_FIXTURE(CenarioComentario, "Comment: User::comentar com exatamente o l
     CHECK(com->get_text() == texto);
     CHECK(checkIn->getComments().size() == 1);
 }
+
+// IDs: o contador _proximo_id é compartilhado por todos os testes, então os
+// testes comparam ids entre si em vez de esperar números fixos (como 1, 2...).
+
+TEST_CASE_FIXTURE(CenarioComentario, "Comment: comentários criados sem id recebem ids diferentes e crescentes") {
+    REQUIRE(checkIn != nullptr);
+    Comment* primeiro = admin.comentar(checkIn, "Também acho!");
+    Comment* segundo = raquel.comentar(checkIn, "Olha os olhos de ressaca");
+    REQUIRE(primeiro != nullptr);
+    REQUIRE(segundo != nullptr);
+    CHECK(primeiro->get_id() > 0);
+    CHECK(segundo->get_id() > primeiro->get_id());
+}
+
+TEST_CASE_FIXTURE(CenarioComentario, "Comment: construtor respeita o id informado") {
+    REQUIRE(checkIn != nullptr);
+    Comment c("Também acho!", &admin, checkIn, &clube, 5000);
+    CHECK(c.get_id() == 5000);
+}
+
+TEST_CASE_FIXTURE(CenarioComentario, "Comment: id gerado depois de um id informado é maior que ele") {
+    REQUIRE(checkIn != nullptr);
+    Comment carregado("Também acho!", &admin, checkIn, &clube, 7000);
+    Comment novo("Eu também", &raquel, checkIn, &clube);
+    CHECK(novo.get_id() > carregado.get_id());
+}
+
+TEST_CASE_FIXTURE(CenarioComentario, "Comment: construtor com id negativo lança exceção") {
+    REQUIRE(checkIn != nullptr);
+    CHECK_THROWS_AS(Comment("Também acho!", &admin, checkIn, &clube, -1), std::invalid_argument);
+}
+
+TEST_CASE_FIXTURE(CenarioComentario, "Comment: construtor que lança exceção não gasta id") {
+    REQUIRE(checkIn != nullptr);
+    Comment antes("Também acho!", &admin, checkIn, &clube);
+    CHECK_THROWS_AS(Comment("", &admin, checkIn, &clube), std::invalid_argument);
+    Comment depois("Eu também", &raquel, checkIn, &clube);
+    CHECK(depois.get_id() == antes.get_id() + 1);
+}

@@ -24,13 +24,13 @@ class Book {
         std::string author;
         std::string genre;
         int pages;
-        std::string ISBN;
+        std::string ISBN;   
         int id; ///< Identificador único do livro (usado nos arquivos de dados).
 
         /// Próximo id a ser gerado. É static: um só contador para todos os livros.
         static int proximoId;
-
-    public:
+    
+    public: 
 
         /**
          * @brief Cria um livro.

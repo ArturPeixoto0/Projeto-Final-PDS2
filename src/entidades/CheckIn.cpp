@@ -6,10 +6,14 @@
 #include <vector>
 #include <ctime>
 
+// Definição do contador static declarado no .hpp. Os ids começam em 1,
+// porque 0 significa "gere um id novo" no construtor.
+int CheckIn::proximoId = 1;
+
 CheckIn::CheckIn(User* user, Book* book, BookClub* club, int page,
-                 const std::string& text)
+                 const std::string& text, int id)
     : text(text), user(user), book(book), club(club), page(0),
-      dataHora(std::time(nullptr)) {
+      dataHora(std::time(nullptr)), id(0) {
     // Um check-in não faz sentido sem autor, livro e clube.
     if (user == nullptr) {
         throw std::invalid_argument("CheckIn precisa de um usuario");
@@ -23,6 +27,26 @@ CheckIn::CheckIn(User* user, Book* book, BookClub* club, int page,
     // setPage só pode ser chamado depois de conferir o livro,
     // porque ele usa book->getPages().
     setPage(page);
+    if (id < 0) {
+        throw std::invalid_argument("Id do check-in nao pode ser negativo");
+    }
+
+    // O id só é definido depois das validações: se o construtor lançar
+    // exceção, nenhum id é gasto.
+    if (id == 0) {
+        this->id = proximoId;
+        proximoId++;
+    } else {
+        this->id = id;
+        // Garante que um id gerado depois nunca repita o id informado.
+        if (id >= proximoId) {
+            proximoId = id + 1;
+        }
+    }
+}
+
+int CheckIn::getId() const {
+    return this->id;
 }
 
 CheckIn::~CheckIn() {

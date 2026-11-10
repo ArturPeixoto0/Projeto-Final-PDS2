@@ -161,3 +161,29 @@ TEST_CASE_FIXTURE(CenarioPerfil, "UserProfile: livrômetro do perfil é igual ao
     CHECK(raquel.getProfile().getTotalBooks() == 1);
 }
 
+
+// IDs do User: ficam aqui porque o testUser.cpp está sendo atualizado por
+// outra pessoa do grupo. O contador proximoId é compartilhado por todos os
+// testes, então os testes comparam ids entre si em vez de esperar números fixos.
+
+TEST_CASE("User: usuários criados sem id recebem ids diferentes e crescentes") {
+    User primeiro("Raquel", "raquel@email.com", "senha123");
+    User segundo("Artur", "artur@email.com", "senha123");
+    CHECK(primeiro.getId() > 0);
+    CHECK(segundo.getId() > primeiro.getId());
+}
+
+TEST_CASE("User: construtor respeita o id informado") {
+    User u("Raquel", "raquel@email.com", "senha123", 5000);
+    CHECK(u.getId() == 5000);
+}
+
+TEST_CASE("User: id gerado depois de um id informado é maior que ele") {
+    User carregado("Raquel", "raquel@email.com", "senha123", 7000);
+    User novo("Artur", "artur@email.com", "senha123");
+    CHECK(novo.getId() > carregado.getId());
+}
+
+TEST_CASE("User: construtor com id negativo lança exceção") {
+    CHECK_THROWS_AS(User("Raquel", "raquel@email.com", "senha123", -1), std::invalid_argument);
+}

@@ -63,6 +63,8 @@ class BookClub {
         std::time_t clubCreation_;
         std::time_t startReading_;
         std::time_t endReading_;
+        int id_;                ///< Identificador único do clube (usado nos arquivos de dados).
+        static int proximoId_;  ///< Próximo id a ser gerado (um só contador para todos os clubes).
  
     public:
         /**
@@ -72,11 +74,17 @@ class BookClub {
          * @param name Nome do clube.
          * @param type Tipo do clube.
          * @param isPrivate Se true, só entra quem tiver o código de convite.
+         * @param id Identificador do clube. Se for 0 (padrão), um id novo é
+         *        gerado. Se for maior que 0, esse id é usado (ao carregar dos
+         *        arquivos) e os próximos ids gerados serão maiores que ele.
+         * @throws std::invalid_argument se founder for nulo, se o nome for
+         *         vazio ou se id for negativo.
          */
         BookClub(User* founder,
                  const std::string& name,
                  const std::string& type,
-                 bool isPrivate = false);
+                 bool isPrivate = false,
+                 int id = 0);
 
         /**
          * @brief Cria um clube do livro que já começa com uma leitura atual.
@@ -87,12 +95,16 @@ class BookClub {
          *        o clube começa sem leitura.
          * @param type Tipo do clube.
          * @param isPrivate Se true, só entra quem tiver o código de convite.
+         * @param id Identificador do clube (0 gera um novo; ver o outro construtor).
+         * @throws std::invalid_argument se founder for nulo, se o nome for
+         *         vazio ou se id for negativo.
          */
         BookClub(User* founder,
                  const std::string& name,
                  Book* firstReading,
                  const std::string& type = "democratico",
-                 bool isPrivate = false);
+                 bool isPrivate = false,
+                 int id = 0);
 
         BookClub(const BookClub&) = delete;
         BookClub& operator=(const BookClub&) = delete;
@@ -106,6 +118,8 @@ class BookClub {
  
         // ---------- GETTERS ----------
  
+        /** @brief Retorna o identificador único do clube. */
+        int getId() const;
         /** @brief Retorna o nome do clube. */
         const std::string& getName() const;
         /** @brief Retorna o tipo do clube. */

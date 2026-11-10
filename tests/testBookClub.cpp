@@ -648,3 +648,49 @@ TEST_CASE_FIXTURE(CenarioClube, "BookClub: setReadPages com valor negativo lanç
     CHECK_NOTHROW(clube.setReadPages(0));   // zero é permitido
     CHECK(clube.getReadPages() == 0);
 }
+
+// =====================================================================
+// IDs
+// =====================================================================
+// O contador proximoId_ é compartilhado por todos os testes, então os testes
+// comparam ids entre si em vez de esperar números fixos (como 1, 2...).
+
+TEST_CASE("BookClub: clubes criados sem id recebem ids diferentes e crescentes") {
+    User admin("Admin", "admin@email.com", "senha123");
+    BookClub primeiro(&admin, "Clube 1", "classicos");
+    BookClub segundo(&admin, "Clube 2", "classicos");
+    CHECK(primeiro.getId() > 0);
+    CHECK(segundo.getId() > primeiro.getId());
+}
+
+TEST_CASE("BookClub: os dois construtores respeitam o id informado") {
+    User admin("Admin", "admin@email.com", "senha123");
+    Book livro("Dom Casmurro", "Machado de Assis", "romance", 300, "01");
+    BookClub semLivro(&admin, "Clube 1", "classicos", false, 5000);
+    BookClub comLivro(&admin, "Clube 2", &livro, "democratico", false, 5001);
+    CHECK(semLivro.getId() == 5000);
+    CHECK(comLivro.getId() == 5001);
+}
+
+TEST_CASE("BookClub: id gerado depois de um id informado é maior que ele") {
+    User admin("Admin", "admin@email.com", "senha123");
+    BookClub carregado(&admin, "Clube 1", "classicos", false, 7000);
+    BookClub novo(&admin, "Clube 2", "classicos");
+    CHECK(novo.getId() > carregado.getId());
+}
+
+TEST_CASE("BookClub: construtor com id negativo lança exceção") {
+    User admin("Admin", "admin@email.com", "senha123");
+    Book livro("Dom Casmurro", "Machado de Assis", "romance", 300, "01");
+    CHECK_THROWS_AS(BookClub(&admin, "Clube", "classicos", false, -1), std::invalid_argument);
+    CHECK_THROWS_AS(BookClub(&admin, "Clube", &livro, "democratico", false, -1), std::invalid_argument);
+    CHECK(admin.getCurrentClubs().empty());   // o clube que falhou não fica na lista
+}
+
+TEST_CASE("BookClub: construtor que lança exceção não gasta id") {
+    User admin("Admin", "admin@email.com", "senha123");
+    BookClub antes(&admin, "Clube 1", "classicos");
+    CHECK_THROWS_AS(BookClub(&admin, "", "classicos"), std::invalid_argument);
+    BookClub depois(&admin, "Clube 2", "classicos");
+    CHECK(depois.getId() == antes.getId() + 1);
+}

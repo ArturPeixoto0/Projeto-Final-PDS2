@@ -37,11 +37,24 @@ class User {
         int totalPages = 0; //paginômetro total do usuário
         int totalBooks = 0; //livrômetro total do usuário
         UserProfile profile; //perfil do User (inicializar com profile(this) no .cpp)
+        int id; //identificador único do User (usado nos arquivos de dados)
+        static int proximoId; //próximo id a ser gerado (um só contador para todos os Users)
 
     public:
+        /**
+         * @brief Cria um usuário.
+         * @param name Nome do usuário.
+         * @param email Email da conta.
+         * @param password Senha da conta.
+         * @param id Identificador do usuário. Se for 0 (padrão), um id novo é
+         *        gerado. Se for maior que 0, esse id é usado (ao carregar dos
+         *        arquivos) e os próximos ids gerados serão maiores que ele.
+         * @throws std::invalid_argument se id for negativo.
+         */
         User(const std::string& name,
              const std::string& email,
-             const std::string& password);
+             const std::string& password,
+             int id = 0);
              
         ~User();
 
@@ -49,6 +62,8 @@ class User {
         User& operator = (const User&) = delete;
 
         //dados da conta:
+        int getId() const; //retorna o identificador único do usuário
+
         std::string getName() const; //retorna o nome do usuário
 
         void setName(const std::string& name); //altera o nome do usuário

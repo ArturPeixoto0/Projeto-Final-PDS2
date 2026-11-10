@@ -11,10 +11,30 @@
 #include "Comment.hpp"
 #include "ReadingMetrics.hpp"
 
+// Definição do contador static declarado no .hpp. Os ids começam em 1,
+// porque 0 significa "gere um id novo" no construtor.
+int User::proximoId = 1;
+
 User::User(const std::string& name,
              const std::string& email,
-             const std::string& password) :
-            name(name), email(email), password(password), profile(this) {}
+             const std::string& password,
+             int id) :
+            name(name), email(email), password(password), profile(this), id(0) {
+    if (id < 0) {
+        throw std::invalid_argument("Id do usuario nao pode ser negativo");
+    }
+
+    if (id == 0) {
+        this->id = proximoId;
+        proximoId++;
+    } else {
+        this->id = id;
+        // Garante que um id gerado depois nunca repita o id informado.
+        if (id >= proximoId) {
+            proximoId = id + 1;
+        }
+    }
+}
 
              
 User::~User() {
@@ -57,6 +77,10 @@ User::~User() {
 }   
 
         //dados da conta:
+int User::getId() const {
+    return this->id;
+}
+
 std::string User::getName() const {
     return this->name;
 } //retorna o nome do usuário
