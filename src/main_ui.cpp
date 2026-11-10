@@ -11,6 +11,8 @@
 #include "ui/Componentes.hpp"
 #include "ui/TelaFeed.hpp"
 #include "ui/TelaUsuario.hpp"
+#include "ui/TelaClube.hpp"
+#include "ClubProfile.hpp"
 
 using namespace ftxui;
 
@@ -27,6 +29,8 @@ Book* dracula = new Book("Drácula","Bram Stoker","Terror",360,"002");
     BookClub* leitoras = julia->criarClube("Leitoras de Quinta", evelyn);
     raquel->entrarClube(leitoras);
     artur->entrarClube(leitoras);
+
+    ClubProfile perfilLeitoras(leitoras);
 
     BookClub* terror = Lior->criarClube("turma assustada",dracula);
     julia->entrarClube(terror);
@@ -58,7 +62,10 @@ Book* dracula = new Book("Drácula","Bram Stoker","Terror",360,"002");
         } else if (abaSelecionada == 2) {
             conteudo = telaUsuario(julia->getProfile());
             rodape = rodapeUsuario();
-        } else {
+        }else if(abaSelecionada==1){
+            conteudo = telaClube(perfilLeitoras);
+             rodape = rodapeClube();
+        }else {
             conteudo = text("Em construção...") | center;
             rodape = text("←→ abas · q: sair") | color(Color::GrayLight);
         }
