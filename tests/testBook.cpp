@@ -1,5 +1,6 @@
 #include "doctest.h"
 #include "Book.hpp"
+#include <stdexcept>
 
 TEST_CASE("Book: contrutor guarda título do livro"){
     Book livro("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
@@ -19,8 +20,8 @@ TEST_CASE("Book: contrutor guarda autor do livro"){
 
 TEST_CASE("Book: setAuthor altera autor do livro"){
     Book livro("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
-    livro.setTitle("Taylor");
-    CHECK(livro.getTitle() == "Taylor");
+    livro.setAuthor("Taylor");
+    CHECK(livro.getAuthor() == "Taylor");
 }
 
 TEST_CASE("Book: contrutor guarda gênero do livro"){
@@ -54,4 +55,39 @@ TEST_CASE("Book: setISBN altera ISBN do livro"){
     Book livro("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
     livro.setISBN("02");
     CHECK(livro.getISBN() == "02");
+}
+
+//exceções:
+TEST_CASE("Book: construtor com título vazio lança exceção"){
+    CHECK_THROWS_AS(Book("","Taylor Jenkins Reid","drama",360,"01"), std::invalid_argument);
+}
+
+TEST_CASE("Book: construtor com zero páginas lança exceção"){
+    CHECK_THROWS_AS(Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",0,"01"), std::invalid_argument);
+}
+
+TEST_CASE("Book: construtor com páginas negativas lança exceção"){
+    CHECK_THROWS_AS(Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",-5,"01"), std::invalid_argument);
+}
+
+TEST_CASE("Book: construtor com uma página funciona"){
+    CHECK_NOTHROW(Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",1,"01"));
+}
+
+TEST_CASE("Book: setTitle com título vazio lança exceção e não muda o título"){
+    Book livro("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
+    CHECK_THROWS_AS(livro.setTitle(""), std::invalid_argument);
+    CHECK(livro.getTitle() == "Os sete maridos de Evelyn Hugo");
+}
+
+TEST_CASE("Book: setPages com zero páginas lança exceção e não muda as páginas"){
+    Book livro("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
+    CHECK_THROWS_AS(livro.setPages(0), std::invalid_argument);
+    CHECK(livro.getPages() == 360);
+}
+
+TEST_CASE("Book: setPages com páginas negativas lança exceção e não muda as páginas"){
+    Book livro("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
+    CHECK_THROWS_AS(livro.setPages(-10), std::invalid_argument);
+    CHECK(livro.getPages() == 360);
 }
