@@ -5,6 +5,8 @@
 #include "BookClub.hpp"
 #include "Book.hpp"
 #include <stdexcept>
+#include <ctime>
+#include <string>
 
 
 struct CenarioCheckIn {
@@ -198,4 +200,24 @@ TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: construtor que lança exceção não
     CHECK_THROWS_AS(CheckIn(&raquel, &livro, &clube, 0, "texto"), std::invalid_argument);
     CheckIn depois(&raquel, &livro, &clube, 60, "texto");
     CHECK(depois.getId() == antes.getId() + 1);
+}
+
+// ------------------------- DATA E HORA -------------------------
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: getDataHoraNumero devolve a hora da criação") {
+    std::time_t antes = std::time(nullptr);
+    CheckIn c(&raquel, &livro, &clube, 50, "Capitu é suspeita");
+    std::time_t depois = std::time(nullptr);
+    CHECK(c.getDataHoraNumero() >= antes);
+    CHECK(c.getDataHoraNumero() <= depois);
+}
+
+// 1592222400 = 15/06/2020 12:00 no horário de Greenwich (UTC). Em qualquer
+// fuso do Brasil ainda é 15/06/2020, mas para não depender do fuso o teste
+// confere só "/06/2020" com find (npos = não achou).
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: restaurarDataHora coloca de volta a data salva") {
+    CheckIn c(&raquel, &livro, &clube, 50, "Capitu é suspeita");
+    c.restaurarDataHora(1592222400);
+    CHECK(c.getDataHoraNumero() == 1592222400);
+    CHECK(c.getDataHora().find("/06/2020") != std::string::npos);
 }

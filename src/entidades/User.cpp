@@ -104,6 +104,10 @@ bool User::checkPassword(const std::string& attempt) const {
         return false;
 }
 
+std::string User::getPassword() const {
+    return this->password;
+}
+
         //perfil: 
 
 UserProfile& User::getProfile() {
@@ -341,4 +345,63 @@ int User::getTotalPages() const {
 }
 int User::getTotalBooks() const {
     return this->totalBooks;
+}
+
+ReadingMetrics* User::getMetrica(const BookClub* club) const {
+    if (club == nullptr){
+        throw std::invalid_argument("Ponteiro de clube do livro inválido");
+    }
+    // A chave do map é BookClub* (sem const), por isso o const_cast,
+    // igual ao getCurrentPage. Ele só serve para procurar; nada é alterado.
+    auto it = allMetrics.find(const_cast<BookClub*>(club));
+    if (it == allMetrics.end()) {
+        return nullptr; //ainda não fez check-in neste clube
+    }
+    return it->second;
+}
+
+        //restauração:
+void User::restaurarTotais(int totalPages, int totalBooks){
+    if (totalPages < 0 || totalBooks < 0){
+        throw std::invalid_argument("Totais do usuário não podem ser negativos");
+    }
+    this->totalPages = totalPages;
+    this->totalBooks = totalBooks;
+}
+
+void User::restaurarMetrica(BookClub* club, ReadingMetrics* metrica){
+    if (club == nullptr){
+        throw std::invalid_argument("Ponteiro de clube do livro inválido");
+    }
+    if (metrica == nullptr){
+        throw std::invalid_argument("Ponteiro de métrica inválido");
+    }
+    if (!this->participaDe(club)){
+        throw std::invalid_argument("Usuário não participa do clube");
+    }
+
+    auto it = allMetrics.find(club);
+    if (it == allMetrics.end()) {
+        allMetrics.insert(std::pair<BookClub*, ReadingMetrics*>(club, metrica));
+    } else {
+        // Já havia uma métrica: apaga a antiga (o User era dono dela).
+        // O if evita apagar a própria métrica nova, se for a mesma.
+        if (it->second != metrica) {
+            delete it->second;
+        }
+        it->second = metrica;
+    }
+}
+
+void User::restaurarCheckIn(CheckIn* checkIn){
+    if (checkIn == nullptr){
+        throw std::invalid_argument("Ponteiro de check-in inválido");
+    }
+    if (checkIn->getUser() != this){
+        throw std::invalid_argument("Check-in de outro usuário");
+    }
+    // Primeiro o clube: se ele recusar (lança exceção), o check-in não entra
+    // em allCheckIns, e os dois lados continuam de acordo.
+    checkIn->getClub()->restaurarCheckIn(checkIn);
+    this->allCheckIns.push_back(checkIn);
 }

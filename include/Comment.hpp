@@ -60,6 +60,13 @@ class Comment {
         BookClub* get_club() const;
         std::time_t get_createdat() const;
 
+        /**
+         * @brief Coloca de volta a data salva nos arquivos. Usado só pelo
+         *        BancoDeDados: o construtor usa a hora atual, e na carga
+         *        precisamos da data original.
+         */
+        void restaurarData(std::time_t data);
+
 };
 
 #endif

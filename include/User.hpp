@@ -72,6 +72,13 @@ class User {
 
         bool checkPassword(const std::string& attempt) const;
 
+        /**
+         * @brief Retorna a senha, para o BancoDeDados salvar nos arquivos.
+         * @warning A senha é guardada em texto puro (sem criptografia). É uma
+         *          limitação conhecida deste trabalho; não use senhas reais.
+         */
+        std::string getPassword() const;
+
         //perfil: 
         UserProfile& getProfile();
         const UserProfile& getProfile() const;
@@ -148,6 +155,48 @@ class User {
         //métricas:
         int getTotalPages() const; //paginometro
         int getTotalBooks() const; //livrometro
+
+        /**
+         * @brief Métrica de leitura do usuário em um clube (para salvar).
+         * @return A métrica, ou nullptr se ainda não há (nenhum check-in no
+         *         clube). A métrica continua pertencendo ao User.
+         * @throws std::invalid_argument se club for nulo.
+         */
+        ReadingMetrics* getMetrica(const BookClub* club) const;
+
+        //restauração (usada só pelo BancoDeDados):
+        //na carga, as ações normais não servem (realizarCheckIn somaria as
+        //páginas de novo, por exemplo). Estes métodos só colocam de volta o
+        //estado salvo, sem efeito colateral.
+
+        /**
+         * @brief Coloca de volta o paginômetro e o livrômetro salvos.
+         * @throws std::invalid_argument se algum for negativo.
+         */
+        void restaurarTotais(int totalPages, int totalBooks);
+
+        /**
+         * @brief Coloca de volta a métrica de leitura de um clube.
+         *        Se der certo, o User vira DONO da métrica (e a apaga no
+         *        destrutor). Se já havia uma métrica nesse clube, a antiga é
+         *        apagada. Se lançar exceção, o User NÃO vira dono: quem chamou
+         *        continua responsável pelo delete.
+         * @throws std::invalid_argument se club ou metrica forem nulos ou se
+         *         o usuário não participar do clube.
+         */
+        void restaurarMetrica(BookClub* club, ReadingMetrics* metrica);
+
+        /**
+         * @brief Coloca de volta um check-in carregado dos arquivos: entra em
+         *        allCheckIns e no feed do clube (BookClub::restaurarCheckIn).
+         *        NÃO mexe em páginas, totais nem métricas, que já foram
+         *        restaurados à parte. Funciona mesmo se o usuário já saiu do
+         *        clube. Se der certo, o User vira DONO do check-in; se lançar
+         *        exceção, quem chamou continua responsável pelo delete.
+         * @throws std::invalid_argument se checkIn for nulo, se for de outro
+         *         usuário, de outro clube ou se já estiver no feed.
+         */
+        void restaurarCheckIn(CheckIn* checkIn);
     
 };
 

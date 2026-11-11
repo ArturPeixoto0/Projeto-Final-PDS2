@@ -92,6 +92,19 @@ public:
     /** @brief Retorna a data e hora da postagem no formato "dd/mm/aaaa hh:mm". */
     std::string getDataHora() const;
 
+    /**
+     * @brief Retorna a data e hora da postagem como número (segundos desde
+     *        1970), o formato usado para salvar nos arquivos.
+     */
+    std::time_t getDataHoraNumero() const;
+
+    /**
+     * @brief Coloca de volta a data e hora salvas nos arquivos. Usado só pelo
+     *        BancoDeDados: o construtor usa a hora atual, e na carga
+     *        precisamos da hora original.
+     */
+    void restaurarDataHora(std::time_t dataHora);
+
     /** @brief Apaga (com delete) todos os comentários e esvazia a lista. */
     void eraseAllComments();
 };

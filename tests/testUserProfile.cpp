@@ -16,6 +16,7 @@
 #include "BookClub.hpp"
 #include "Book.hpp"
 #include "CheckIn.hpp"
+#include "ReadingMetrics.hpp"
 #include <type_traits>
 #include <stdexcept>
 #include <iostream>
@@ -190,6 +191,109 @@ TEST_CASE("User: id gerado depois de um id informado é maior que ele") {
 
 TEST_CASE("User: construtor com id negativo lança exceção") {
     CHECK_THROWS_AS(User("Raquel", "raquel@email.com", "senha123", -1), std::invalid_argument);
+}
+
+// Restauração do User (usada pelo BancoDeDados na carga dos arquivos).
+// Também fica aqui pelo mesmo motivo dos IDs.
+
+TEST_CASE("User: getPassword devolve a senha da conta") {
+    User u("Raquel", "raquel@email.com", "senha123");
+    CHECK(u.getPassword() == "senha123");
+    CHECK(u.checkPassword(u.getPassword()));
+}
+
+TEST_CASE_FIXTURE(CenarioPerfil, "User: getMetrica devolve nullptr antes do primeiro check-in") {
+    CHECK(raquel.getMetrica(&clube1) == nullptr);
+}
+
+TEST_CASE_FIXTURE(CenarioPerfil, "User: getMetrica devolve a métrica do clube depois do check-in") {
+    raquel.realizarCheckIn(&clube1, 50, "Capitu é suspeita");
+    ReadingMetrics* m = raquel.getMetrica(&clube1);
+    REQUIRE(m != nullptr);
+    CHECK(m->getReading() == &livro1);
+    CHECK(m->getCurrentPage() == 50);
+    CHECK(raquel.getMetrica(&clube2) == nullptr);   // no outro clube ainda não leu
+}
+
+TEST_CASE_FIXTURE(CenarioPerfil, "User: getMetrica com clube nulo lança exceção") {
+    CHECK_THROWS_AS(raquel.getMetrica(nullptr), std::invalid_argument);
+}
+
+TEST_CASE("User: restaurarTotais coloca de volta paginômetro e livrômetro") {
+    User u("Raquel", "raquel@email.com", "senha123");
+    u.restaurarTotais(1200, 4);
+    CHECK(u.getTotalPages() == 1200);
+    CHECK(u.getTotalBooks() == 4);
+}
+
+TEST_CASE("User: restaurarTotais com valor negativo lança exceção e não muda nada") {
+    User u("Raquel", "raquel@email.com", "senha123");
+    CHECK_THROWS_AS(u.restaurarTotais(-1, 0), std::invalid_argument);
+    CHECK_THROWS_AS(u.restaurarTotais(0, -1), std::invalid_argument);
+    CHECK(u.getTotalPages() == 0);
+    CHECK(u.getTotalBooks() == 0);
+}
+
+TEST_CASE_FIXTURE(CenarioPerfil, "User: restaurarMetrica coloca a métrica sem mexer nos totais") {
+    ReadingMetrics* m = new ReadingMetrics(&livro1, 120, -1, false);   // a raquel vira dona
+    raquel.restaurarMetrica(&clube1, m);
+    CHECK(raquel.getMetrica(&clube1) == m);
+    CHECK(raquel.getCurrentPage(&clube1) == 120);
+    CHECK(raquel.getTotalPages() == 0);   // os totais vêm do restaurarTotais
+}
+
+TEST_CASE_FIXTURE(CenarioPerfil, "User: restaurarMetrica troca a métrica antiga pela nova") {
+    raquel.realizarCheckIn(&clube1, 50, "Capitu é suspeita");   // cria a métrica antiga
+    ReadingMetrics* nova = new ReadingMetrics(&livro1, 200, -1, false);
+    raquel.restaurarMetrica(&clube1, nova);   // a antiga é apagada pela raquel
+    CHECK(raquel.getMetrica(&clube1) == nova);
+    CHECK(raquel.getCurrentPage(&clube1) == 200);
+}
+
+TEST_CASE_FIXTURE(CenarioPerfil, "User: restaurarMetrica com nulo ou fora do clube lança exceção") {
+    User fora("Fora", "fora@email.com", "senha123");
+    ReadingMetrics* m = new ReadingMetrics(&livro1, 120, -1, false);
+    CHECK_THROWS_AS(raquel.restaurarMetrica(nullptr, m), std::invalid_argument);
+    CHECK_THROWS_AS(raquel.restaurarMetrica(&clube1, nullptr), std::invalid_argument);
+    CHECK_THROWS_AS(fora.restaurarMetrica(&clube1, m), std::invalid_argument);
+    // Como todas lançaram, ninguém virou dono de m: o teste apaga.
+    delete m;
+}
+
+TEST_CASE_FIXTURE(CenarioPerfil, "User: restaurarCheckIn coloca no histórico e no feed sem somar páginas") {
+    CheckIn* c = new CheckIn(&raquel, &livro1, &clube1, 120, "Capitu é suspeita");   // a raquel vira dona
+    raquel.restaurarCheckIn(c);
+
+    REQUIRE(raquel.getAllCheckIns().size() == 1);
+    CHECK(raquel.getAllCheckIns()[0] == c);
+    REQUIRE(clube1.getFeed().size() == 1);
+    CHECK(clube1.getFeed()[0] == c);
+    // Diferente de realizarCheckIn: nada de páginas, totais nem métrica.
+    CHECK(raquel.getTotalPages() == 0);
+    CHECK(clube1.getReadPages() == 0);
+    CHECK(raquel.getMetrica(&clube1) == nullptr);
+}
+
+TEST_CASE_FIXTURE(CenarioPerfil, "User: restaurarCheckIn funciona para quem já saiu do clube") {
+    raquel.sairClube(&clube1);
+    CheckIn* c = new CheckIn(&raquel, &livro1, &clube1, 120, "li antes de sair");
+    raquel.restaurarCheckIn(c);
+    REQUIRE(clube1.getFeed().size() == 1);
+    CHECK(clube1.getFeed()[0] == c);
+    CHECK(raquel.getAllCheckIns().size() == 1);
+}
+
+TEST_CASE_FIXTURE(CenarioPerfil, "User: restaurarCheckIn recusa nulo, check-in de outro usuário e repetido") {
+    CHECK_THROWS_AS(raquel.restaurarCheckIn(nullptr), std::invalid_argument);
+
+    CheckIn* doAdmin = new CheckIn(&admin, &livro1, &clube1, 10, "texto");
+    CHECK_THROWS_AS(raquel.restaurarCheckIn(doAdmin), std::invalid_argument);
+    delete doAdmin;   // lançou: ninguém virou dono
+
+    CheckIn* c = new CheckIn(&raquel, &livro1, &clube1, 10, "texto");
+    raquel.restaurarCheckIn(c);
+    CHECK_THROWS_AS(raquel.restaurarCheckIn(c), std::invalid_argument);   // o feed recusa
+    CHECK(raquel.getAllCheckIns().size() == 1);   // não entrou duas vezes
 }
 
 // ------------------------------ SHOW_* ------------------------------

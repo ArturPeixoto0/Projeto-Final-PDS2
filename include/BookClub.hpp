@@ -159,6 +159,10 @@ class BookClub {
         int getReadBooks() const;
         /** @brief Retorna a data de criação do clube. */
         std::time_t getClubCreation() const;
+        /** @brief Retorna o início da leitura atual (0 se não há leitura). */
+        std::time_t getStartReading() const;
+        /** @brief Retorna o fim (prazo) da leitura atual (0 se não foi definido). */
+        std::time_t getEndReading() const;
  
         /**
          * @brief Retorna o código de convite.
@@ -345,6 +349,67 @@ class BookClub {
          * @throws std::invalid_argument se actor ou alvo forem nulos.
          */
         bool transferirAdmin(User* actor, User* alvo);
+
+        // ---------- RESTAURAÇÃO (usada só pelo BancoDeDados) ----------
+        //
+        // Na carga dos arquivos, as ações normais não servem: elas conferem
+        // regras de "ação nova" (ser membro, ser admin, status do livro) e
+        // mudam datas e contadores. Estes métodos só colocam de volta o
+        // estado salvo, sem efeito colateral.
+
+        /**
+         * @brief Coloca de volta os dados salvos que não vêm pelo construtor.
+         * @param inviteCode Código de convite salvo.
+         * @param active Se o clube está ativo.
+         * @param readPages Total de páginas lidas no clube.
+         * @param readBooks Total de livros lidos no clube.
+         * @param clubCreation Data de criação.
+         * @param startReading Início da leitura atual (0 se não há).
+         * @param endReading Prazo da leitura atual (0 se não há).
+         * @throws std::invalid_argument se o código for vazio (num clube
+         *         privado, o código vazio deixaria qualquer um entrar) ou se
+         *         readPages ou readBooks forem negativos.
+         */
+        void restaurarEstado(const std::string& inviteCode, bool active,
+                             int readPages, int readBooks,
+                             std::time_t clubCreation,
+                             std::time_t startReading,
+                             std::time_t endReading);
+
+        /**
+         * @brief Coloca um livro no catálogo já com o status salvo.
+         *        Não mexe em datas nem em livros lidos (isso vem do restaurarEstado).
+         * @throws std::invalid_argument se livro for nulo, se já estiver no
+         *         catálogo ou se for um segundo livro com status Atual.
+         */
+        void restaurarLivroNoCatalogo(Book* livro, Status status);
+
+        /**
+         * @brief Coloca de volta a nota de um usuário para um livro do catálogo.
+         *        Não exige que o usuário ainda seja membro (quem saiu do clube
+         *        continua com a nota).
+         * @throws std::invalid_argument se livro ou user forem nulos, se o
+         *         livro não estiver no catálogo ou se a nota não for de 1 a 5.
+         */
+        void restaurarNota(Book* livro, const User* user, int nota);
+
+        /**
+         * @brief Coloca de volta o voto de um usuário num livro do catálogo.
+         *        Não exige que o usuário ainda seja membro.
+         * @throws std::invalid_argument se livro ou user forem nulos, se o
+         *         livro não estiver no catálogo ou se o voto for repetido.
+         */
+        void restaurarVoto(Book* livro, const User* user);
+
+        /**
+         * @brief Coloca no feed um check-in carregado dos arquivos.
+         *        Diferente de adicionarCheckIn, NÃO exige que o autor ainda
+         *        seja membro: quem saiu do clube continua com os check-ins no
+         *        feed (US08). Chamado por User::restaurarCheckIn.
+         * @throws std::invalid_argument se checkIn for nulo, se for de outro
+         *         clube ou se já estiver no feed.
+         */
+        void restaurarCheckIn(CheckIn* checkIn);
 };
  
 #endif
