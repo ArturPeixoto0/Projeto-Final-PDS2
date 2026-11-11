@@ -7,7 +7,8 @@
  * confere se o perfil mostra o mesmo valor (US27: "alterações no perfil são
  * refletidas imediatamente").
  *
- * Os métodos show_* não são testados aqui porque só imprimem na tela.
+ * Os métodos show_* imprimem na tela; para testá-los, a saída do cout é
+ * captudara com a struct CapturaSaida (mesma ideia do testClubProfile).
  */
 #include "doctest.h"
 #include "UserProfile.hpp"
@@ -17,6 +18,9 @@
 #include "CheckIn.hpp"
 #include <type_traits>
 #include <stdexcept>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 TEST_CASE("UserProfile: é um Profile") {
     CHECK(std::is_base_of<Profile, UserProfile>::value);
@@ -186,4 +190,106 @@ TEST_CASE("User: id gerado depois de um id informado é maior que ele") {
 
 TEST_CASE("User: construtor com id negativo lança exceção") {
     CHECK_THROWS_AS(User("Raquel", "raquel@email.com", "senha123", -1), std::invalid_argument);
+}
+
+// ------------------------------ SHOW_* ------------------------------
+
+namespace {
+/*
+ * Captura tudo o que for impresso no cout enquanto o objeto existir.
+ * No construtor, troca o "destino" do cout pela nossa stringstream;
+ * no destrutor, devolve o destino antigo (mesmo se o teste falhar).
+ */
+struct CapturaSaida {
+    std::stringstream buffer;
+    std::streambuf* antigo;
+
+    CapturaSaida() : antigo(std::cout.rdbuf(buffer.rdbuf())) {}
+    ~CapturaSaida() { std::cout.rdbuf(antigo); }
+
+    std::string str() const { return buffer.str(); }
+};
+} // namespace
+
+TEST_CASE("UserProfile: show_name imprime o nome do usuário") {
+    User u("Raquel", "raquel@email.com", "senha123");
+    CapturaSaida saida;
+    u.getProfile().show_name();
+    CHECK(saida.str() == "Raquel\n");
+}
+
+TEST_CASE("UserProfile: show_pfp sem foto avisa que não tem foto") {
+    User u("Raquel", "raquel@email.com", "senha123");
+    CapturaSaida saida;
+    u.getProfile().show_pfp();
+    CHECK(saida.str() == "(sem foto de perfil)\n");
+}
+
+TEST_CASE("UserProfile: show_pfp com foto imprime o caminho") {
+    User u("Raquel", "raquel@email.com", "senha123");
+    u.getProfile().setPhotoPath("fotos/raquel.png");
+    CapturaSaida saida;
+    u.getProfile().show_pfp();
+    CHECK(saida.str() == "Foto: fotos/raquel.png\n");
+}
+
+TEST_CASE("UserProfile: show_description sem descrição avisa que não tem") {
+    User u("Raquel", "raquel@email.com", "senha123");
+    CapturaSaida saida;
+    u.getProfile().show_description();
+    CHECK(saida.str() == "(sem descricao)\n");
+}
+
+TEST_CASE("UserProfile: show_description com descrição imprime a descrição") {
+    User u("Raquel", "raquel@email.com", "senha123");
+    u.getProfile().setDescription("Leio um livro por mês");
+    CapturaSaida saida;
+    u.getProfile().show_description();
+    CHECK(saida.str() == "Leio um livro por mês\n");
+}
+
+TEST_CASE("UserProfile: show_clubs sem clubes avisa que não participa de nenhum") {
+    User u("Raquel", "raquel@email.com", "senha123");
+    CapturaSaida saida;
+    u.getProfile().show_clubs();
+    CHECK(saida.str() == "Nao participa de nenhum clube.\n");
+}
+
+TEST_CASE_FIXTURE(CenarioPerfil, "UserProfile: show_clubs lista os clubes do usuário") {
+    CapturaSaida saida;
+    raquel.getProfile().show_clubs();
+    CHECK(saida.str() == "- Clube do Machado\n- Clube da Clarice\n");
+}
+
+TEST_CASE_FIXTURE(CenarioPerfil, "UserProfile: show_clubs marca os clubes em que o usuário é admin") {
+    CapturaSaida saida;
+    admin.getProfile().show_clubs();
+    CHECK(saida.str() == "- Clube do Machado (admin)\n- Clube da Clarice (admin)\n");
+}
+
+TEST_CASE("UserProfile: show_checkins sem check-ins avisa que não tem nenhum") {
+    User u("Raquel", "raquel@email.com", "senha123");
+    CapturaSaida saida;
+    u.getProfile().show_checkins();
+    CHECK(saida.str() == "Nenhum check-in ainda.\n");
+}
+
+// A data e a hora mudam a cada execução, então o teste confere só os pedaços
+// fixos da linha com find (find devolve std::string::npos se não achar).
+TEST_CASE_FIXTURE(CenarioPerfil, "UserProfile: show_checkins mostra clube, livro, página e texto") {
+    raquel.realizarCheckIn(&clube1, 50, "Capitu é meio suspeita");
+    CapturaSaida saida;
+    raquel.getProfile().show_checkins();
+    CHECK(saida.str().find("Clube do Machado | Dom Casmurro | pagina 50: Capitu é meio suspeita") != std::string::npos);
+}
+
+TEST_CASE_FIXTURE(CenarioPerfil, "UserProfile: show_checkins mostra do mais novo para o mais antigo") {
+    raquel.realizarCheckIn(&clube1, 50, "primeiro");
+    raquel.realizarCheckIn(&clube2, 20, "segundo");
+    CapturaSaida saida;
+    raquel.getProfile().show_checkins();
+    std::string texto = saida.str();
+    REQUIRE(texto.find("segundo") != std::string::npos);
+    REQUIRE(texto.find("primeiro") != std::string::npos);
+    CHECK(texto.find("segundo") < texto.find("primeiro"));
 }
