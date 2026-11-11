@@ -133,7 +133,7 @@ endif
 .PHONY: test testBook testBookClub testCheckIn testComment testUser testProfile testClubProfile testUserProfile testReadingMetrics
 
 test: ${SELECTED_TEST} ${CLASS_OBJS} ${BUILD_TESTS_DIR}/testMain.o
-	${CC} $^ -o ${BUILD_TESTS_DIR}/${NAME_EXECUTABLE}
+	${CC} $^ -static -o ${BUILD_TESTS_DIR}/${NAME_EXECUTABLE}
 	./${BUILD_TESTS_DIR}/${NAME_EXECUTABLE}
 
 testBook testBookClub testCheckIn testComment testUser testProfile testClubProfile testUserProfile testReadingMetrics:
