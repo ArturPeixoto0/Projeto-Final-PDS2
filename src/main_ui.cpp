@@ -53,11 +53,18 @@ Book* dracula = new Book("Drácula","Bram Stoker","Terror",360,"002");
     int abaSelecionada = 0;
     float rolagem = 0.0f;
 
+    int abaAnterior = 0;
+    std::string aviso;
     // o Toggle já reage às setas e muda o abaSelecionada
     Component menu = Toggle(&abas, &abaSelecionada);
 
 
     Component app = Renderer(menu, [&] {
+        if(abaSelecionada != abaAnterior){
+            rolagem = 0.0f;
+            aviso = "";
+            abaAnterior = abaSelecionada;
+        }
         Element conteudo;
         Element rodape;
         if (abaSelecionada == 0) {
@@ -73,7 +80,9 @@ Book* dracula = new Book("Drácula","Bram Stoker","Terror",360,"002");
             conteudo = text("Em construção...") | center;
             rodape = text("←→ abas · q: sair") | color(Color::GrayLight);
         }
-
+        if (!aviso.empty()) {
+            rodape = vbox({ text(aviso) | color(Color::Yellow), rodape});
+        }
         return vbox({
             menu->Render(),
             separator(),
@@ -373,7 +382,11 @@ Book* dracula = new Book("Drácula","Bram Stoker","Terror",360,"002");
             if (!nomesClubes.empty()) {
                 clubeEscolhido = 0;
                 campoAtual = 0;
+                aviso = "";
                 mostrarNovoCheckIn = true;
+            } 
+            else {
+                aviso = "Você não está em nenhum clube. Aperte c para criar um.";
             }
             return true;
         }
@@ -394,7 +407,10 @@ Book* dracula = new Book("Drácula","Bram Stoker","Terror",360,"002");
             if (!checkinsVisiveis.empty()) {
                 checkinEscolhido = 0;
                 campoComentarioAtual = 0;
+                aviso = "";
                 mostrarComentarios = true;
+            } else {
+                aviso = "Nenhum check-in para comentar ainda.";
             }
             return true;
         }
