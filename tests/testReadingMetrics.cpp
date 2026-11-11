@@ -1,6 +1,7 @@
 #include "doctest.h"
 #include "ReadingMetrics.hpp"
 #include "Book.hpp"
+#include <stdexcept>
 
 TEST_CASE("ReadingMetrics: Construtor correto"){
     Book* livro = new Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
@@ -10,6 +11,10 @@ TEST_CASE("ReadingMetrics: Construtor correto"){
     CHECK(metrica.getGrade() == -1);
     CHECK(metrica.isFinished() == false);
     delete livro;
+}
+
+TEST_CASE("ReadingMetrics: Construtor recebendo ponteiro nulo"){
+    CHECK_THROWS_AS(ReadingMetrics(nullptr), std::invalid_argument);
 }
 
 TEST_CASE("ReadingMetrics: addPages dentro do limite aceito"){
@@ -33,44 +38,30 @@ TEST_CASE("ReadingMetrics: addPages completando o livro"){
 TEST_CASE("ReadingMetrics: addPages com limite superior violado"){
     Book* livro = new Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
     ReadingMetrics metrica(livro);
-    metrica.addPages(400);
-    CHECK(metrica.getCurrentPage() == 0);
-    CHECK(metrica.isFinished() == false);
+    CHECK_THROWS_AS(metrica.addPages(400), std::out_of_range);
     delete livro;
 }
 
 TEST_CASE("ReadingMetrics: addPages com limite inferior violado"){
     Book* livro = new Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
     ReadingMetrics metrica(livro);
-    metrica.addPages(-100);
-    CHECK(metrica.getCurrentPage() == 0);
-    CHECK(metrica.isFinished() == false);
+    CHECK_THROWS_AS(metrica.addPages(-100), std::invalid_argument);
     delete livro;
 }
 
-TEST_CASE("ReadingMetrics: addPages recebendo um char"){
+TEST_CASE("ReadingMetrics: addPages com número de páginas igual a zero"){
     Book* livro = new Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
     ReadingMetrics metrica(livro);
-    metrica.addPages('a');
-    CHECK(metrica.getCurrentPage() == 0);
-    CHECK(metrica.isFinished() == false);
-    delete livro;
-}
+    CHECK_THROWS_AS(metrica.addPages(0), std::invalid_argument);
 
-TEST_CASE("ReadingMetrics: addPages recebendo um double"){
-    Book* livro = new Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
-    ReadingMetrics metrica(livro);
-    metrica.addPages(100.5);
-    CHECK(metrica.getCurrentPage() == 100);
-    CHECK(metrica.isFinished() == false);
     delete livro;
 }
 
 TEST_CASE("ReadingMetrics: finish sem ter terminado o livro"){
     Book* livro = new Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
     ReadingMetrics metrica(livro);
-    metrica.finish();
-    CHECK(metrica.isFinished() == false);
+    CHECK_THROWS_AS(metrica.finish(), std::logic_error);
+    
     delete livro;
 }
 
@@ -118,8 +109,8 @@ TEST_CASE("ReadingMetrics: reset já tendo terminado o livro"){
 TEST_CASE("ReadingMetrics: setGrade sem ter terminado o livro"){
     Book* livro = new Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
     ReadingMetrics metrica(livro);
-    metrica.setGrade(4.3);
-    CHECK(metrica.getGrade() == -1);
+    CHECK_THROWS_AS(metrica.setGrade(4.3), std::logic_error);
+
     delete livro;
 }
 
@@ -127,8 +118,8 @@ TEST_CASE("ReadingMetrics: setGrade com limite superior violado"){
     Book* livro = new Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
     ReadingMetrics metrica(livro);
     metrica.addPages(360);
-    metrica.setGrade(5.1);
-    CHECK(metrica.getGrade() == -1);
+    CHECK_THROWS_AS(metrica.setGrade(5.1), std::invalid_argument);
+    
     delete livro;
 }
 
@@ -145,16 +136,7 @@ TEST_CASE("ReadingMetrics: setGrade com limite inferior violado"){
     Book* livro = new Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
     ReadingMetrics metrica(livro);
     metrica.addPages(360);
-    metrica.setGrade(-1.2);
-    CHECK(metrica.getGrade() == -1);
-    delete livro;
-}
-
-TEST_CASE("ReadingMetrics: setGrade recebendo um char"){
-    Book* livro = new Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
-    ReadingMetrics metrica(livro);
-    metrica.addPages(360);
-    metrica.setGrade('a');
-    CHECK(metrica.getGrade() == -1);
+    CHECK_THROWS_AS(metrica.setGrade(-1.2), std::invalid_argument);
+    
     delete livro;
 }

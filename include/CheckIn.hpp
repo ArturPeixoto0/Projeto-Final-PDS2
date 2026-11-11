@@ -41,6 +41,10 @@ private:
 
     std::time_t dataHora;
 
+    int id; ///< Identificador único do check-in (usado nos arquivos de dados).
+
+    static int proximoId; ///< Próximo id a ser gerado (um só contador para todos os check-ins).
+
     /**
      * @brief Define a página do check-in.
      * @throws std::invalid_argument se a página for menor que 1 ou maior
@@ -56,11 +60,17 @@ public:
      * @param club Clube em que o check-in foi feito.
      * @param page Página em que o usuário está (de 1 até o total do livro).
      * @param text Comentário do check-in (opcional).
+     * @param id Identificador do check-in. Se for 0 (padrão), um id novo é
+     *        gerado. Se for maior que 0, esse id é usado (ao carregar dos
+     *        arquivos) e os próximos ids gerados serão maiores que ele.
      * @throws std::invalid_argument se user, book ou club forem nullptr,
-     *         ou se a página for inválida.
+     *         se a página for inválida ou se id for negativo.
      */
     CheckIn(User* user, Book* book, BookClub* club, int page,
-            const std::string& text = "");
+            const std::string& text = "", int id = 0);
+
+    /** @brief Retorna o identificador único do check-in. */
+    int getId() const;
 
     /** @brief Destrói o check-in, apagando todos os seus comentários. */
     ~CheckIn();

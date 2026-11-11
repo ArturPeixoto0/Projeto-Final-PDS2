@@ -7,8 +7,17 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <stdexcept>
 
-ClubProfile::ClubProfile(BookClub* club) : club(club) {}
+ClubProfile::ClubProfile(BookClub* club){
+    if (club == nullptr) {
+        throw std::invalid_argument("Ponteiro nulo");
+    }
+    else {
+        this->club = club;
+    }
+    
+}
 
 BookClub* ClubProfile::getClub() const {
     return this->club;
@@ -56,9 +65,17 @@ void ClubProfile::show_checkins() const {
     // Do mais novo para o mais antigo.
     for (int i = (int)feed.size() - 1; i >= 0; i--) {
         CheckIn* c = feed[i];
+        if (c == nullptr){
+            throw std::runtime_error("Ponteiro de Check in inválido");
+        }
+        if (c->getUser() == nullptr){
+            throw std::runtime_error("Check in sem usuário");
+        }
+        else{
         std::cout << "[" << c->getDataHora() << "] "
                   << c->getUser()->getName() << " | pagina "
                   << c->getPage() << ": " << c->getText() << std::endl;
+        }
     }
 }
 

@@ -27,6 +27,9 @@ class Comment {
         CheckIn* _checkin;
         std::string _text;
         std::time_t _created_at;
+        int _id; ///< Identificador único do comentário (usado nos arquivos de dados).
+
+        static int _proximo_id; ///< Próximo id a ser gerado (um só contador para todos os comentários).
 
     public:
         /** @brief Limite de caracteres do comentário (US25: menor que um tweet). */
@@ -34,10 +37,22 @@ class Comment {
 
         /**
          * @brief Cria um comentário.
+         * @param text Texto do comentário (1 a MAX_LENGTH caracteres).
+         * @param author Autor do comentário.
+         * @param checkIn Check-in comentado.
+         * @param club Clube do check-in.
+         * @param id Identificador do comentário. Se for 0 (padrão), um id novo
+         *        é gerado. Se for maior que 0, esse id é usado (ao carregar dos
+         *        arquivos) e os próximos ids gerados serão maiores que ele.
          * @throws std::invalid_argument se o texto for vazio ou maior que
-         *         MAX_LENGTH, ou se author, checkIn ou club forem nullptr.
+         *         MAX_LENGTH, se author, checkIn ou club forem nullptr, ou se
+         *         id for negativo.
          */
-        Comment(std::string text, User* author, CheckIn* checkIn, BookClub* club);
+        Comment(std::string text, User* author, CheckIn* checkIn, BookClub* club,
+                int id = 0);
+
+        /** @brief Retorna o identificador único do comentário. */
+        int get_id() const;
 
         std::string get_text() const;
         User* get_author() const;

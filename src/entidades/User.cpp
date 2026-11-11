@@ -1,6 +1,8 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <stdexcept>
+
 #include "User.hpp"
 #include "Book.hpp"
 #include "BookClub.hpp"
@@ -9,34 +11,62 @@
 #include "Comment.hpp"
 #include "ReadingMetrics.hpp"
 
+// Definição do contador static declarado no .hpp. Os ids começam em 1,
+// porque 0 significa "gere um id novo" no construtor.
+int User::proximoId = 1;
+
 User::User(const std::string& name,
              const std::string& email,
-             const std::string& password) :
-            name(name), email(email), password(password), profile(this) {}
+             const std::string& password,
+             int id) :
+            name(name), email(email), password(password), profile(this), id(0) {
+    if (id < 0) {
+        throw std::invalid_argument("Id do usuario nao pode ser negativo");
+    }
+
+    if (id == 0) {
+        this->id = proximoId;
+        proximoId++;
+    } else {
+        this->id = id;
+        // Garante que um id gerado depois nunca repita o id informado.
+        if (id >= proximoId) {
+            proximoId = id + 1;
+        }
+    }
+}
 
              
 User::~User() {
-
     for(int i = 0; i < (int)this->allCheckIns.size(); i++) {
-        BookClub* club = this->allCheckIns[i]->getClub();
-        if(this->participaDe(club)) {
-            club->eraseCheckIn(this->allCheckIns[i]);
+        if (this->allCheckIns[i] != nullptr){
+            if (this->allCheckIns[i]->getClub() != nullptr){
+                BookClub* club = this->allCheckIns[i]->getClub();
+                if(this->participaDe(club)) {
+                    club->eraseCheckIn(this->allCheckIns[i]);
+                }
+            }
         }
     }
 
     std::vector<BookClub*> copia = this->currentClubs;
     for(int i = 0; i < (int)copia.size(); i++) {
-        BookClub* club = copia[i];
+        if (copia[i] != nullptr){
+            BookClub* club = copia[i];
             if(club->isAdmin(this)) {
-                const std::vector<User*>& membros = club->getMembers();
-                for(int j = 0; j < (int)membros.size(); j++){
-                    if(membros[j] != this) {
-                        club->transferirAdmin(this, membros[j]);
-                        break;
+                if(club->getMembers().size() != 0){
+                    const std::vector<User*>& membros = club->getMembers();
+                    for(int j = 0; j < (int)membros.size(); j++){
+                        if(membros[j] != this) {
+                            club->transferirAdmin(this, membros[j]);
+                            break;
+                        }
                     }
                 }
             }
             this->sairClube(club);
+        }
+        
     }
     for(auto& metric : allMetrics) {
         delete metric.second;
@@ -46,12 +76,11 @@ User::~User() {
     }
 }   
 
-/*
-User::User(const User&) = delete;
-User::User& operator = (const User&) = delete;
-*/
-
         //dados da conta:
+int User::getId() const {
+    return this->id;
+}
+
 std::string User::getName() const {
     return this->name;
 } //retorna o nome do usuário
@@ -86,6 +115,9 @@ const std::vector<BookClub*>& User::getCurrentClubs() const {
     return this->currentClubs;
 }
 bool User::participaDe(const BookClub* club) const {
+    if (club == nullptr){
+        throw std::invalid_argument("Ponteiro de clube do livro inválido");
+    }
     for (int i=0; i < (int)this->currentClubs.size(); i++) {
         if (this->currentClubs[i] == club){
             return true;
@@ -95,37 +127,65 @@ bool User::participaDe(const BookClub* club) const {
 } //verifica se participa
     
 BookClub* User::criarClube(const std::string& clubName, Book* reading) {
+    if (reading == nullptr){
+        throw std::invalid_argument("Ponteiro de livro inválido");
+    }
 
     return new BookClub(this, clubName, reading);
 }
 
 bool User::entrarClube(BookClub* club, const std::string& codigo) {
-    if (club == nullptr || this->participaDe(club) == true) {
+    if (club == nullptr){
+        throw std::invalid_argument("Ponteiro nulo");
+    }
+    
+    if (this->participaDe(club)) {
         return false;
     }
 
-    if (club->isMember(this) == false) {
-        return club->entrarNoClube(this, codigo);
+    // O clube já tem este User como membro: a chamada veio do próprio clube
+    // (BookClub::entrarNoClube ou o construtor, no caso do fundador).
+    // Falta só o lado do User. A métrica de leitura não é criada aqui, porque
+    // o clube pode ainda não ter leitura atual; ela é criada no primeiro
+    // check-in (ver realizarCheckIn).
+    if (club->isMember(this)) {
+        this->currentClubs.push_back(club);
+        return true;
     }
 
-    this->currentClubs.push_back(club);
-    allMetrics.insert(std::pair<BookClub*, ReadingMetrics*>(club, new ReadingMetrics(club->getCurrentReading())));
-    return true;
+    // Chamada veio de fora: pede ao clube para entrar. O clube confere o
+    // código, se adiciona e chama de volta este método (o caso de cima).
+    return club->entrarNoClube(this, codigo);
 }
 
 bool User::sairClube(BookClub* club) {
-    if (this->participaDe(club) == false) {
+    if (club == nullptr){
+        throw std::invalid_argument("Ponteiro de clube do livro inválido");
+    }
+
+    if (!this->participaDe(club)) {
         return false;
     }
 
-    if (club->isMember(this) == true) {
+    // Chamada veio de fora: pede ao clube para sair. O clube pode recusar
+    // (admin com outros membros). Se aceitar, ele chama de volta este método,
+    // que cai no caso de baixo.
+    if (club->isMember(this)) {
         return club->sairDoClube(this);
     }
 
+    // O clube já tirou este User (sairDoClube, removerMembro ou o destrutor
+    // do clube): falta só o lado do User.
     auto it = std::find(this->currentClubs.begin(), this->currentClubs.end(), club);
-    this->currentClubs.erase(it);
-    delete allMetrics[club];
-    allMetrics.erase(club);
+    if (it != this->currentClubs.end()) {
+        this->currentClubs.erase(it);
+    }
+
+    auto metrica = allMetrics.find(club);
+    if (metrica != allMetrics.end()) {
+        delete metrica->second;
+        allMetrics.erase(metrica);
+    }
     return true;
 }
 
@@ -134,19 +194,27 @@ const std::vector<CheckIn*>& User::getAllCheckIns() const {
     return this->allCheckIns;
 }
 int User::getCurrentPage(const BookClub* club) const { 
-    auto it = allMetrics.find(const_cast<BookClub*>(club));
-
-    if (it != allMetrics.end()){
-        return it->second->getCurrentPage();
+    if (club == nullptr){
+        throw std::invalid_argument("Ponteiro de clube do livro inválido");
     }
 
-    return -1; //user n ta no club
+    if (!this->participaDe(club)) {
+        return -1; //user n ta no club
+    }
+
+    auto it = allMetrics.find(const_cast<BookClub*>(club));
+    if (it == allMetrics.end()) {
+        return 0; //participa, mas ainda não fez check-in
+    }
+    return it->second->getCurrentPage();
 }
 
 CheckIn* User::realizarCheckIn(BookClub* club, int page, const std::string& text, bool finished){
-    auto it = allMetrics.find(const_cast<BookClub*>(club));
+    if (club == nullptr){
+        throw std::invalid_argument("Ponteiro de clube do livro inválido");
+    }
 
-    if(it == allMetrics.end()){
+    if (!this->participaDe(club)) {
         return nullptr; //usuário nao esta no clube
     }
     Book* livro = club->getCurrentReading();
@@ -155,6 +223,14 @@ CheckIn* User::realizarCheckIn(BookClub* club, int page, const std::string& text
         return nullptr; //clube sem leitura atual
     }
 
+    // Primeiro check-in neste clube: cria a métrica agora que existe livro.
+    auto it = allMetrics.find(club);
+    if (it == allMetrics.end()) {
+        allMetrics.insert(std::pair<BookClub*, ReadingMetrics*>(club, new ReadingMetrics(livro)));
+        it = allMetrics.find(club);
+    }
+
+    // O clube trocou de livro desde o último check-in: começa do zero.
     if(it->second->getReading() != livro) {
         delete it->second;
         it->second = new ReadingMetrics(livro);
@@ -203,33 +279,54 @@ bool User::apagarCheckIn(CheckIn* checkIn){
 }
 
 Comment* User::comentar(CheckIn* checkIn, const std::string& text){
-    if (checkIn != nullptr){
+    if (checkIn == nullptr){
+        return nullptr;
+    }
+
+    // Só membros do clube podem comentar nos check-ins dele (US25).
+    if (!this->participaDe(checkIn->getClub())) {
+        return nullptr;
+    }
+
+    // O construtor do Comment lança invalid_argument se o texto for vazio
+    // ou passar do limite. Aqui isso vira "comentário recusado" (nullptr).
+    try {
         Comment* novo = new Comment(text, this, checkIn, checkIn->getClub());
         checkIn->getComments().push_back(novo);
         return novo;
+    } catch (std::invalid_argument& e) {
+        return nullptr;
     }
-    return nullptr;   
 }
     
         //livros: 
 bool User::sugerirLivro(BookClub* club, Book* book){
-    if (this->participaDe(club) == true){
-        if (club->adicionarLivro(book) == true){
-            return true;
-        }
-        return false;
+    if (club == nullptr){
+        throw std::invalid_argument("Ponteiro de clube do livro inválido");
+    }
+    if (book == nullptr){
+        throw std::invalid_argument("Ponteiro de livro inválido");
+    }
+
+    if (this->participaDe(club) && club->adicionarLivro(book)){
+        return true;
     }
     return false;
 }
 
 bool User::avaliarLeitura (BookClub* club, double grade){
-    if (grade > 5 || grade < 0)
-        return false;
-    auto it = allMetrics.find(const_cast<BookClub*>(club));
+    if (club == nullptr){
+        throw std::invalid_argument("Ponteiro de clube do livro inválido");
+    }
+    try{
+        auto it = allMetrics.find(const_cast<BookClub*>(club));
 
-    if (it != allMetrics.end()){
-        it->second->setGrade(grade);
-        return true;
+        if (it != allMetrics.end()){
+            it->second->setGrade(grade);
+            return true;
+        }
+    } catch (std::invalid_argument& e){
+        return false;
     }
     return false;
 }

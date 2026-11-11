@@ -30,7 +30,7 @@ ${BUILD_TESTS_DIR}/testUserProfile.o \
 ${BUILD_TESTS_DIR}/testReadingMetrics.o
 
 OBJS = ${CLASS_OBJS} \
-${BUILD_DIR}/main.o
+${BUILD_DIR}/main_ui.o
     
 all: ${BUILD_DIR} ${OBJS}
 	${CC} ${CFLAGS} ${OBJS} -o ${BUILD_DIR}/programa
@@ -62,8 +62,8 @@ ${BUILD_DIR}/ClubProfile.o: ${INCLUDE_DIR}/ClubProfile.hpp ${INCLUDE_DIR}/Profil
 ${BUILD_DIR}/UserProfile.o: ${INCLUDE_DIR}/UserProfile.hpp ${INCLUDE_DIR}/Profile.hpp ${ENTIDADES_DIR}/UserProfile.cpp
 	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${ENTIDADES_DIR}/UserProfile.cpp -o ${BUILD_DIR}/UserProfile.o 
 
-${BUILD_DIR}/main.o: ${INCLUDE_DIR}/Book.hpp ${INCLUDE_DIR}/BookClub.hpp ${INCLUDE_DIR}/CheckIn.hpp ${INCLUDE_DIR}/Comment.hpp ${INCLUDE_DIR}/User.hpp ${INCLUDE_DIR}/Profile.hpp ${INCLUDE_DIR}/ClubProfile.hpp ${SRC_DIR}/main.cpp
-	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${SRC_DIR}/main.cpp -o ${BUILD_DIR}/main.o
+${BUILD_DIR}/main_ui.o: ${INCLUDE_DIR}/Book.hpp ${INCLUDE_DIR}/BookClub.hpp ${INCLUDE_DIR}/CheckIn.hpp ${INCLUDE_DIR}/Comment.hpp ${INCLUDE_DIR}/User.hpp ${INCLUDE_DIR}/Profile.hpp ${INCLUDE_DIR}/ClubProfile.hpp ${INCLUDE_DIR}/UserProfile.hpp ${INCLUDE_DIR}/ReadingMetrics.hpp ${SRC_DIR}/main_ui.cpp
+	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${SRC_DIR}/main_ui.cpp -o ${BUILD_DIR}/main_ui.o
     
 #Compila os tests
 
