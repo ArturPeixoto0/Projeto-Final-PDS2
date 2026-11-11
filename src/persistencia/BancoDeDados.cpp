@@ -4,6 +4,8 @@
 #include "BookClub.hpp"
 #include "UserProfile.hpp"
 #include "ReadingMetrics.hpp"
+#include "CheckIn.hpp"
+#include "Comment.hpp"
 #include "json.hpp"
 #include <ctime>
 #include <fstream>
@@ -175,6 +177,7 @@ void BancoDeDados::carregarTudo() {
     this->carregarUsuarios();
     this->carregarClubes();
     this->carregarMetricas();
+    this->carregarCheckIns();
 }
 
 void BancoDeDados::salvarTudo() const {
@@ -182,6 +185,7 @@ void BancoDeDados::salvarTudo() const {
     this->salvarUsuarios();
     this->salvarClubes();
     this->salvarMetricas();
+    this->salvarCheckIns();
 }
 
 // =====================================================================
@@ -560,6 +564,114 @@ void BancoDeDados::carregarMetricas() {
             // Construtor de carga: valida página, nota e terminou. O User
             // vira dono da métrica no restaurarMetrica.
             usuario->restaurarMetrica(clube, new ReadingMetrics(livro, paginaAtual, nota, terminou));
+        }
+    }
+}
+
+// =====================================================================
+// Check-ins e comentários
+//
+// checkins/<id do clube>.json (o feed, na mesma ordem):
+// [{"id": 7, "user": 3, "livro": 2, "pagina": 120, "texto": "...",
+//   "dataHora": 1700000000}, ...]
+//
+// comments/<id do check-in>.json:
+// [{"id": 9, "autor": 5, "texto": "...", "data": 1700000000}, ...]
+// O arquivo de comentários é escrito para TODO check-in, mesmo sem
+// comentários ([]). Depois de reabrir o programa, um id de check-in apagado
+// pode ser gerado de novo; escrevendo sempre, um arquivo velho com aquele
+// id é substituído e nunca é lido no check-in novo.
+// =====================================================================
+
+void BancoDeDados::salvarCheckIns() const {
+    for (int i = 0; i < (int)this->clubes.size(); i++) {
+        BookClub* clube = this->clubes[i];
+        // Mesmo critério do salvarClubes: clube sem admin não é salvo.
+        if (clube->getAdmin() == nullptr) {
+            continue;
+        }
+
+        nlohmann::json feed = nlohmann::json::array();
+        const std::vector<CheckIn*>& checkIns = clube->getFeed();
+        for (int j = 0; j < (int)checkIns.size(); j++) {
+            CheckIn* checkIn = checkIns[j];
+            nlohmann::json item;
+            item["id"] = checkIn->getId();
+            item["user"] = checkIn->getUser()->getId();
+            item["livro"] = checkIn->getBook()->getId();
+            item["pagina"] = checkIn->getPage();
+            item["texto"] = checkIn->getText();
+            item["dataHora"] = checkIn->getDataHoraNumero();
+            feed.push_back(item);
+
+            nlohmann::json comentarios = nlohmann::json::array();
+            const std::vector<Comment*>& lista = checkIn->getComments();
+            for (int k = 0; k < (int)lista.size(); k++) {
+                nlohmann::json comentario;
+                comentario["id"] = lista[k]->get_id();
+                comentario["autor"] = lista[k]->get_author()->getId();
+                comentario["texto"] = lista[k]->get_text();
+                comentario["data"] = lista[k]->get_createdat();
+                comentarios.push_back(comentario);
+            }
+            escreverJson(this->caminho("comments/" + std::to_string(checkIn->getId()) + ".json"), comentarios);
+        }
+        escreverJson(this->caminho("checkins/" + std::to_string(clube->getId()) + ".json"), feed);
+    }
+}
+
+void BancoDeDados::carregarCheckIns() {
+    for (int i = 0; i < (int)this->clubes.size(); i++) {
+        BookClub* clube = this->clubes[i];
+        nlohmann::json feed;
+        if (!lerLista(this->caminho("checkins/" + std::to_string(clube->getId()) + ".json"), feed)) {
+            continue;   // arquivo não existe: clube sem check-ins
+        }
+        for (int j = 0; j < (int)feed.size(); j++) {
+            nlohmann::json item = feed[j];
+            int id = item["id"];
+            int idUser = item["user"];
+            int idLivro = item["livro"];
+            int pagina = item["pagina"];
+            std::string texto = item["texto"];
+            std::time_t dataHora = item["dataHora"];
+
+            // Referência quebrada (autor ou livro que não existem): ignora o
+            // check-in. Conferir ANTES do new evita um check-in sem dono.
+            User* autor = this->buscarUsuario(idUser);
+            Book* livro = this->buscarLivro(idLivro);
+            if (autor == nullptr || livro == nullptr) {
+                continue;
+            }
+
+            // NUNCA realizarCheckIn aqui: ele somaria as páginas de novo no
+            // paginômetro e no clube (os totais já vieram dos arquivos).
+            CheckIn* checkIn = new CheckIn(autor, livro, clube, pagina, texto, id);
+            checkIn->restaurarDataHora(dataHora);
+            // A partir daqui o autor é DONO do check-in: ele entra na lista
+            // do autor e no feed do clube, mesmo que o autor já tenha saído.
+            autor->restaurarCheckIn(checkIn);
+
+            nlohmann::json comentarios;
+            if (!lerLista(this->caminho("comments/" + std::to_string(id) + ".json"), comentarios)) {
+                continue;   // arquivo não existe: check-in sem comentários
+            }
+            for (int k = 0; k < (int)comentarios.size(); k++) {
+                nlohmann::json comentario = comentarios[k];
+                int idComentario = comentario["id"];
+                int idAutor = comentario["autor"];
+                std::string textoComentario = comentario["texto"];
+                std::time_t data = comentario["data"];
+
+                User* autorComentario = this->buscarUsuario(idAutor);
+                if (autorComentario == nullptr) {
+                    continue;   // referência quebrada: autor que não existe
+                }
+                Comment* novo = new Comment(textoComentario, autorComentario, checkIn, clube, idComentario);
+                novo->restaurarData(data);
+                // O CheckIn é DONO dos comentários e os apaga no destrutor.
+                checkIn->getComments().push_back(novo);
+            }
         }
     }
 }

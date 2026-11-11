@@ -28,7 +28,9 @@ class BookClub;
  *    que o banco descobre quais clubs/<id>.json existem;
  *  - clubs/<id>.json: um clube (dados, membros e catálogo);
  *  - readingmetrics/<id do usuário>.json: as métricas de leitura do
- *    usuário em cada clube.
+ *    usuário em cada clube;
+ *  - checkins/<id do clube>.json: o feed do clube, na ordem do feed;
+ *  - comments/<id do check-in>.json: os comentários de um check-in.
  *
  * Posse dos objetos:
  *  - O BancoDeDados é DONO dos livros, usuários e clubes e os apaga no
@@ -36,6 +38,9 @@ class BookClub;
  *    primeiro porque o destrutor do BookClub tira o clube da lista de cada
  *    membro (precisa dos User vivos), e os livros por último porque clubes,
  *    métricas e check-ins apontam para eles.
+ *  - O banco NÃO é dono dos CheckIn nem dos Comment: na carga, cada
+ *    CheckIn passa a pertencer ao seu autor (User::restaurarCheckIn), e
+ *    cada Comment ao seu CheckIn (que o apaga no destrutor).
  *
  * Por causa dessa posse, o BancoDeDados não pode ser copiado: as duas
  * cópias apagariam os mesmos objetos.
@@ -47,6 +52,10 @@ class BookClub;
  *  - na carga, o administrador vira o primeiro membro do clube (ele é
  *    passado como fundador). Se a administração foi transferida, a ordem
  *    dos membros muda, e com ela o desempate do ranking;
+ *  - na carga, os check-ins entram na lista do usuário clube por clube.
+ *    Dentro de cada clube a ordem é a do feed, mas entre clubes diferentes
+ *    a lista do usuário pode sair da ordem de data (o perfil mostra na
+ *    ordem da lista);
  *  - a senha é salva em texto puro;
  *  - salvar reescreve o arquivo inteiro; se o programa fechar no meio da
  *    escrita, o arquivo pode ficar cortado;
@@ -70,6 +79,8 @@ class BancoDeDados {
         void carregarClubes();
         void salvarMetricas() const;
         void carregarMetricas();
+        void salvarCheckIns() const;
+        void carregarCheckIns();
 
     public:
         /**

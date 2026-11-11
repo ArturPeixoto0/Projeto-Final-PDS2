@@ -65,7 +65,7 @@ ${BUILD_DIR}/ClubProfile.o: ${INCLUDE_DIR}/ClubProfile.hpp ${INCLUDE_DIR}/Profil
 ${BUILD_DIR}/UserProfile.o: ${INCLUDE_DIR}/UserProfile.hpp ${INCLUDE_DIR}/Profile.hpp ${ENTIDADES_DIR}/UserProfile.cpp
 	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${ENTIDADES_DIR}/UserProfile.cpp -o ${BUILD_DIR}/UserProfile.o 
 
-${BUILD_DIR}/BancoDeDados.o: ${INCLUDE_DIR}/BancoDeDados.hpp ${INCLUDE_DIR}/json.hpp ${INCLUDE_DIR}/Book.hpp ${INCLUDE_DIR}/User.hpp ${INCLUDE_DIR}/BookClub.hpp ${INCLUDE_DIR}/UserProfile.hpp ${INCLUDE_DIR}/Profile.hpp ${INCLUDE_DIR}/ReadingMetrics.hpp ${PERSISTENCIA_DIR}/BancoDeDados.cpp
+${BUILD_DIR}/BancoDeDados.o: ${INCLUDE_DIR}/BancoDeDados.hpp ${INCLUDE_DIR}/json.hpp ${INCLUDE_DIR}/Book.hpp ${INCLUDE_DIR}/User.hpp ${INCLUDE_DIR}/BookClub.hpp ${INCLUDE_DIR}/UserProfile.hpp ${INCLUDE_DIR}/Profile.hpp ${INCLUDE_DIR}/ReadingMetrics.hpp ${INCLUDE_DIR}/CheckIn.hpp ${INCLUDE_DIR}/Comment.hpp ${PERSISTENCIA_DIR}/BancoDeDados.cpp
 	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${PERSISTENCIA_DIR}/BancoDeDados.cpp -o ${BUILD_DIR}/BancoDeDados.o
 
 ${BUILD_DIR}/main_ui.o: ${INCLUDE_DIR}/Book.hpp ${INCLUDE_DIR}/BookClub.hpp ${INCLUDE_DIR}/CheckIn.hpp ${INCLUDE_DIR}/Comment.hpp ${INCLUDE_DIR}/User.hpp ${INCLUDE_DIR}/Profile.hpp ${INCLUDE_DIR}/ClubProfile.hpp ${INCLUDE_DIR}/UserProfile.hpp ${INCLUDE_DIR}/ReadingMetrics.hpp ${SRC_DIR}/main_ui.cpp

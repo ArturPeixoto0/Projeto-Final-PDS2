@@ -17,6 +17,8 @@
 #include "User.hpp"
 #include "BookClub.hpp"
 #include "ReadingMetrics.hpp"
+#include "CheckIn.hpp"
+#include "Comment.hpp"
 #include "UserProfile.hpp"
 #include <ctime>
 #include <fstream>
@@ -578,4 +580,233 @@ TEST_CASE("BancoDeDados: adicionarClube recusa nulo e id repetido") {
     CHECK_THROWS_AS(banco.adicionarClube(mesmoId), std::invalid_argument);
     CHECK(banco.getClubes().size() == 1);
     delete mesmoId;   // lançou: o banco não virou dono
+}
+
+// ------------------------------ CHECK-INS E COMENTÁRIOS ------------------------------
+
+namespace {
+// Ids e valores do cenário de check-ins, para conferir depois da carga.
+struct CenarioFeed {
+    int idDom;
+    int idJulia, idRaquel, idArtur;
+    int idClube;
+    int idCheckIn1, idCheckIn2, idCheckIn3;
+    int idComentario1, idComentario2;
+    std::time_t dataCheckIn3, dataComentario2;
+};
+
+/*
+ * Monta o cenário pelas ações NORMAIS e salva:
+ *  - clube "Leitoras de Quinta" (admin julia), lendo Dom Casmurro (300 págs.);
+ *  - feed, nesta ordem: raquel pág. 50, artur pág. 120, raquel pág. 80;
+ *  - o check-in do artur tem dois comentários (julia e raquel);
+ *  - depois o artur SAI do clube: o check-in dele continua no feed.
+ * As datas dos dois primeiros check-ins e do primeiro comentário são
+ * trocadas por datas fixas do passado, para o teste ver que elas voltam.
+ */
+CenarioFeed salvarCenarioDeFeed() {
+    limparPastaDeTeste();
+    CenarioFeed salvo;
+    BancoDeDados banco(PASTA_TESTE);
+
+    Book* dom = new Book("Dom Casmurro", "Machado de Assis", "romance", 300, "01");
+    banco.adicionarLivro(dom);
+    User* julia = new User("Julia", "julia@email.com", "123");
+    User* raquel = new User("Raquel", "raquel@email.com", "123");
+    User* artur = new User("Artur", "artur@email.com", "123");
+    banco.adicionarUsuario(julia);
+    banco.adicionarUsuario(raquel);
+    banco.adicionarUsuario(artur);
+
+    BookClub* clube = julia->criarClube("Leitoras de Quinta", dom);
+    banco.adicionarClube(clube);
+    raquel->entrarClube(clube);
+    artur->entrarClube(clube);
+
+    CheckIn* c1 = raquel->realizarCheckIn(clube, 50, "Comecei hoje");
+    c1->restaurarDataHora(1592222400);
+    CheckIn* c2 = artur->realizarCheckIn(clube, 120, "Capitu traiu?");
+    c2->restaurarDataHora(1592222400 + 3600);
+    CheckIn* c3 = raquel->realizarCheckIn(clube, 80, "Bentinho ciumento");
+
+    Comment* com1 = julia->comentar(c2, "Também acho!");
+    com1->restaurarData(1592222400 + 7200);
+    Comment* com2 = raquel->comentar(c2, "Eu não!");
+
+    artur->sairClube(clube);   // o check-in dele continua no feed (US08)
+
+    salvo.idDom = dom->getId();
+    salvo.idJulia = julia->getId();
+    salvo.idRaquel = raquel->getId();
+    salvo.idArtur = artur->getId();
+    salvo.idClube = clube->getId();
+    salvo.idCheckIn1 = c1->getId();
+    salvo.idCheckIn2 = c2->getId();
+    salvo.idCheckIn3 = c3->getId();
+    salvo.idComentario1 = com1->get_id();
+    salvo.idComentario2 = com2->get_id();
+    salvo.dataCheckIn3 = c3->getDataHoraNumero();
+    salvo.dataComentario2 = com2->get_createdat();
+
+    banco.salvarTudo();
+    return salvo;
+}
+} // namespace
+
+TEST_CASE("BancoDeDados: feed volta na mesma ordem, com autores, páginas, textos e datas") {
+    CenarioFeed salvo = salvarCenarioDeFeed();
+    BancoDeDados banco(PASTA_TESTE);
+    banco.carregarTudo();
+
+    BookClub* clube = banco.buscarClube(salvo.idClube);
+    REQUIRE(clube != nullptr);
+    const std::vector<CheckIn*>& feed = clube->getFeed();
+    REQUIRE(feed.size() == 3);
+
+    CHECK(feed[0]->getId() == salvo.idCheckIn1);
+    CHECK(feed[0]->getUser() == banco.buscarUsuario(salvo.idRaquel));
+    CHECK(feed[0]->getBook() == banco.buscarLivro(salvo.idDom));
+    CHECK(feed[0]->getClub() == clube);
+    CHECK(feed[0]->getPage() == 50);
+    CHECK(feed[0]->getText() == "Comecei hoje");
+    CHECK(feed[0]->getDataHoraNumero() == 1592222400);
+
+    CHECK(feed[1]->getId() == salvo.idCheckIn2);
+    CHECK(feed[1]->getUser() == banco.buscarUsuario(salvo.idArtur));
+    CHECK(feed[1]->getPage() == 120);
+    CHECK(feed[1]->getText() == "Capitu traiu?");
+    CHECK(feed[1]->getDataHoraNumero() == 1592222400 + 3600);
+
+    CHECK(feed[2]->getId() == salvo.idCheckIn3);
+    CHECK(feed[2]->getPage() == 80);
+    CHECK(feed[2]->getText() == "Bentinho ciumento");
+    CHECK(feed[2]->getDataHoraNumero() == salvo.dataCheckIn3);
+}
+
+TEST_CASE("BancoDeDados: comentários voltam com autor, texto, data e ids") {
+    CenarioFeed salvo = salvarCenarioDeFeed();
+    BancoDeDados banco(PASTA_TESTE);
+    banco.carregarTudo();
+
+    BookClub* clube = banco.buscarClube(salvo.idClube);
+    REQUIRE(clube != nullptr);
+    REQUIRE(clube->getFeed().size() == 3);
+    CheckIn* doArtur = clube->getFeed()[1];
+    const std::vector<Comment*>& comentarios = doArtur->getComments();
+    REQUIRE(comentarios.size() == 2);
+
+    CHECK(comentarios[0]->get_id() == salvo.idComentario1);
+    CHECK(comentarios[0]->get_author() == banco.buscarUsuario(salvo.idJulia));
+    CHECK(comentarios[0]->get_text() == "Também acho!");
+    CHECK(comentarios[0]->get_createdat() == 1592222400 + 7200);
+    CHECK(comentarios[0]->get_checkin() == doArtur);
+    CHECK(comentarios[0]->get_club() == clube);
+
+    CHECK(comentarios[1]->get_id() == salvo.idComentario2);
+    CHECK(comentarios[1]->get_author() == banco.buscarUsuario(salvo.idRaquel));
+    CHECK(comentarios[1]->get_text() == "Eu não!");
+    CHECK(comentarios[1]->get_createdat() == salvo.dataComentario2);
+
+    // Os outros check-ins não tinham comentários.
+    CHECK(clube->getFeed()[0]->getComments().empty());
+    CHECK(clube->getFeed()[2]->getComments().empty());
+}
+
+TEST_CASE("BancoDeDados: check-in de quem saiu do clube sobrevive à carga") {
+    CenarioFeed salvo = salvarCenarioDeFeed();
+    BancoDeDados banco(PASTA_TESTE);
+    banco.carregarTudo();
+
+    BookClub* clube = banco.buscarClube(salvo.idClube);
+    User* artur = banco.buscarUsuario(salvo.idArtur);
+    REQUIRE(clube != nullptr);
+    CHECK_FALSE(clube->isMember(artur));
+    CHECK_FALSE(artur->participaDe(clube));
+    REQUIRE(artur->getAllCheckIns().size() == 1);
+    CHECK(artur->getAllCheckIns()[0] == clube->getFeed()[1]);
+}
+
+TEST_CASE("BancoDeDados: carregar não soma as páginas de novo") {
+    CenarioFeed salvo = salvarCenarioDeFeed();
+    // Carrega e salva duas vezes: se a carga usasse realizarCheckIn, os
+    // totais cresceriam a cada volta.
+    for (int volta = 0; volta < 2; volta++) {
+        BancoDeDados banco(PASTA_TESTE);
+        banco.carregarTudo();
+        banco.salvarTudo();
+    }
+    BancoDeDados banco(PASTA_TESTE);
+    banco.carregarTudo();
+
+    BookClub* clube = banco.buscarClube(salvo.idClube);
+    User* raquel = banco.buscarUsuario(salvo.idRaquel);
+    User* artur = banco.buscarUsuario(salvo.idArtur);
+    REQUIRE(clube != nullptr);
+    CHECK(raquel->getTotalPages() == 80);
+    CHECK(artur->getTotalPages() == 120);
+    CHECK(clube->getReadPages() == 200);
+    CHECK(raquel->getCurrentPage(clube) == 80);
+    CHECK(raquel->getAllCheckIns().size() == 2);
+    CHECK(clube->getFeed().size() == 3);
+    CHECK(clube->getFeed()[1]->getComments().size() == 2);
+}
+
+TEST_CASE("BancoDeDados: check-in criado depois da carga recebe id maior") {
+    CenarioFeed salvo = salvarCenarioDeFeed();
+    BancoDeDados banco(PASTA_TESTE);
+    banco.carregarTudo();
+
+    BookClub* clube = banco.buscarClube(salvo.idClube);
+    User* raquel = banco.buscarUsuario(salvo.idRaquel);
+    CheckIn* novo = raquel->realizarCheckIn(clube, 100, "Continuando");
+    REQUIRE(novo != nullptr);
+    CHECK(novo->getId() > salvo.idCheckIn3);
+    CHECK(clube->getFeed().size() == 4);
+}
+
+TEST_CASE("BancoDeDados: check-in sem comentários grava um arquivo de comentários vazio") {
+    CenarioFeed salvo = salvarCenarioDeFeed();
+    std::ifstream arquivo(PASTA_TESTE + "comments/" + std::to_string(salvo.idCheckIn1) + ".json");
+    REQUIRE(arquivo.is_open());
+    std::string conteudo;
+    std::string linha;
+    while (std::getline(arquivo, linha)) {
+        conteudo += linha;
+    }
+    CHECK(conteudo == "[]");
+}
+
+TEST_CASE("BancoDeDados: check-in e comentário com referência quebrada são ignorados") {
+    limparPastaDeTeste();
+    escreverArquivo("users.json",
+        "[{\"id\": 987201, \"nome\": \"Julia\", \"email\": \"julia@email.com\", \"senha\": \"123\","
+        " \"descricao\": \"\", \"foto\": \"\", \"header\": \"\", \"totalPaginas\": 0, \"totalLivros\": 0}]");
+    escreverArquivo("books.json",
+        "[{\"id\": 987202, \"titulo\": \"Dom Casmurro\", \"autor\": \"\", \"genero\": \"\","
+        " \"paginas\": 300, \"isbn\": \"\"}]");
+    escreverArquivo("clubs.json", "[987203]");
+    escreverArquivo("clubs/987203.json",
+        "{\"id\": 987203, \"nome\": \"Clube\", \"tipo\": \"t\", \"privado\": false, \"ativo\": true,"
+        " \"codigoConvite\": \"ABC1234567\", \"admin\": 987201, \"membros\": [987201],"
+        " \"catalogo\": [{\"livro\": 987202, \"status\": \"Atual\", \"notas\": [], \"votos\": []}],"
+        " \"paginasLidas\": 0, \"livrosLidos\": 0, \"criacao\": 1592222400,"
+        " \"inicioLeitura\": 0, \"fimLeitura\": 0}");
+    // O primeiro check-in tem um autor que não existe (999999); o segundo é bom.
+    escreverArquivo("checkins/987203.json",
+        "[{\"id\": 987204, \"user\": 999999, \"livro\": 987202, \"pagina\": 10, \"texto\": \"a\", \"dataHora\": 1592222400},"
+        " {\"id\": 987205, \"user\": 987201, \"livro\": 987202, \"pagina\": 20, \"texto\": \"b\", \"dataHora\": 1592222400}]");
+    // O primeiro comentário tem um autor que não existe; o segundo é bom.
+    escreverArquivo("comments/987205.json",
+        "[{\"id\": 987206, \"autor\": 999999, \"texto\": \"x\", \"data\": 1592222400},"
+        " {\"id\": 987207, \"autor\": 987201, \"texto\": \"oi\", \"data\": 1592222400}]");
+
+    BancoDeDados banco(PASTA_TESTE);
+    CHECK_NOTHROW(banco.carregarTudo());
+    BookClub* clube = banco.buscarClube(987203);
+    REQUIRE(clube != nullptr);
+    REQUIRE(clube->getFeed().size() == 1);
+    CHECK(clube->getFeed()[0]->getId() == 987205);
+    REQUIRE(clube->getFeed()[0]->getComments().size() == 1);
+    CHECK(clube->getFeed()[0]->getComments()[0]->get_id() == 987207);
+    limparPastaDeTeste();
 }
