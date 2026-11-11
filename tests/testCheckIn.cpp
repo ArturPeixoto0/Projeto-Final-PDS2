@@ -4,6 +4,7 @@
 #include "User.hpp"
 #include "BookClub.hpp"
 #include "Book.hpp"
+#include <stdexcept>
 
 
 struct CenarioCheckIn {
@@ -24,28 +25,6 @@ struct CenarioCheckIn {
 };
 
 
-TEST_CASE("CheckIn: construtor padrão começa com texto vazio") {
-    CheckIn c;
-    CHECK(c.getText() == "");
-}
-
-TEST_CASE("CheckIn: construtor padrão começa na página 0") {
-    CheckIn c;
-    CHECK(c.getPages() == 0);
-}
-
-TEST_CASE("CheckIn: construtor padrão começa sem comentários") {
-    CheckIn c;
-    CHECK(c.getComents().empty());
-}
-
-TEST_CASE("CheckIn: construtor padrão não aponta para autor, livro nem clube") {
-    CheckIn c;
-    CHECK(c.getUser() == nullptr);
-    CHECK(c.getBook() == nullptr);
-    CHECK(c.getClub() == nullptr);
-}
-
 TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: guarda o texto escrito pelo usuário") {
     CheckIn* c = raquel.realizarCheckIn(&clube, 50, "Capitu é suspeita");
     REQUIRE(c != nullptr);   // REQUIRE: se falhar, não adianta testar o resto
@@ -55,7 +34,7 @@ TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: guarda o texto escrito pelo usuário
 TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: guarda a página informada") {
     CheckIn* c = raquel.realizarCheckIn(&clube, 50, "Capitu é suspeita");
     REQUIRE(c != nullptr);
-    CHECK(c->getPages() == 50);
+    CHECK(c->getPage() == 50);
 }
 
 TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: guarda o autor (US18)") {
@@ -105,7 +84,7 @@ TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: registra data e hora da postagem") {
 TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: check-in novo não tem comentários") {
     CheckIn* c = raquel.realizarCheckIn(&clube, 50, "Capitu é suspeita");
     REQUIRE(c != nullptr);
-    CHECK(c->getComents().empty());
+    CHECK(c->getComments().empty());
 }
 
 TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: comentário publicado aparece no check-in (US25)") {
@@ -114,8 +93,8 @@ TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: comentário publicado aparece no che
     Comment* com = admin.comentar(c, "Também acho!");
     REQUIRE(com != nullptr);
 
-    REQUIRE(c->getComents().size() == 1);
-    CHECK(c->getComents()[0] == com);
+    REQUIRE(c->getComments().size() == 1);
+    CHECK(c->getComments()[0] == com);
 }
 
 TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: aceita vários comentários de membros diferentes, na ordem (US25)") {
@@ -124,9 +103,9 @@ TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: aceita vários comentários de membr
     Comment* primeiro = admin.comentar(c, "Também acho!");
     Comment* segundo = raquel.comentar(c, "Né? Olha os olhos de ressaca");
 
-    REQUIRE(c->getComents().size() == 2);
-    CHECK(c->getComents()[0] == primeiro);
-    CHECK(c->getComents()[1] == segundo);
+    REQUIRE(c->getComments().size() == 2);
+    CHECK(c->getComments()[0] == primeiro);
+    CHECK(c->getComments()[1] == segundo);
 }
 
 TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: comentário em um check-in não aparece em outro") {
@@ -136,13 +115,87 @@ TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: comentário em um check-in não apar
     REQUIRE(c2 != nullptr);
 
     admin.comentar(c1, "Também acho!");
-    CHECK(c1->getComents().size() == 1);
-    CHECK(c2->getComents().empty());
+    CHECK(c1->getComments().size() == 1);
+    CHECK(c2->getComments().empty());
 }
 
 TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: comentário recusado não entra na lista") {
     CheckIn* c = raquel.realizarCheckIn(&clube, 50, "Capitu é suspeita");
     REQUIRE(c != nullptr);
     admin.comentar(c, "");   // texto vazio é recusado (ver testUser.cpp)
-    CHECK(c->getComents().empty());
+    CHECK(c->getComments().empty());
+}
+//exceções:
+// O construtor é chamado direto (sem realizarCheckIn) para testar só a
+// validação do CheckIn.
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: construtor com usuário nullptr lança exceção") {
+    CHECK_THROWS_AS(CheckIn(nullptr, &livro, &clube, 10), std::invalid_argument);
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: construtor com livro nullptr lança exceção") {
+    CHECK_THROWS_AS(CheckIn(&raquel, nullptr, &clube, 10), std::invalid_argument);
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: construtor com clube nullptr lança exceção") {
+    CHECK_THROWS_AS(CheckIn(&raquel, &livro, nullptr, 10), std::invalid_argument);
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: construtor com página 0 lança exceção") {
+    CHECK_THROWS_AS(CheckIn(&raquel, &livro, &clube, 0), std::invalid_argument);
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: construtor com página negativa lança exceção") {
+    CHECK_THROWS_AS(CheckIn(&raquel, &livro, &clube, -5), std::invalid_argument);
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: construtor com página maior que o livro lança exceção") {
+    // livro tem 300 páginas
+    CHECK_THROWS_AS(CheckIn(&raquel, &livro, &clube, 301), std::invalid_argument);
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: primeira e última página do livro são aceitas") {
+    CHECK_NOTHROW(CheckIn(&raquel, &livro, &clube, 1));
+    CHECK_NOTHROW(CheckIn(&raquel, &livro, &clube, 300));
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: realizarCheckIn com página inválida lança exceção e não muda nada") {
+    CHECK_THROWS_AS(raquel.realizarCheckIn(&clube, 301, "passei do fim"), std::invalid_argument);
+    CHECK(raquel.getAllCheckIns().empty());
+    CHECK(clube.getFeed().empty());
+    CHECK(raquel.getTotalPages() == 0);
+    CHECK(clube.getReadPages() == 0);
+}
+
+// IDs: o contador proximoId é compartilhado por todos os testes, então os
+// testes comparam ids entre si em vez de esperar números fixos (como 1, 2...).
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: check-ins criados sem id recebem ids diferentes e crescentes") {
+    CheckIn* primeiro = raquel.realizarCheckIn(&clube, 50, "Capitu é suspeita");
+    CheckIn* segundo = raquel.realizarCheckIn(&clube, 80, "Bentinho ciumento");
+    REQUIRE(primeiro != nullptr);
+    REQUIRE(segundo != nullptr);
+    CHECK(primeiro->getId() > 0);
+    CHECK(segundo->getId() > primeiro->getId());
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: construtor respeita o id informado") {
+    CheckIn c(&raquel, &livro, &clube, 50, "Capitu é suspeita", 5000);
+    CHECK(c.getId() == 5000);
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: id gerado depois de um id informado é maior que ele") {
+    CheckIn carregado(&raquel, &livro, &clube, 50, "Capitu é suspeita", 7000);
+    CheckIn novo(&raquel, &livro, &clube, 80, "Bentinho ciumento");
+    CHECK(novo.getId() > carregado.getId());
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: construtor com id negativo lança exceção") {
+    CHECK_THROWS_AS(CheckIn(&raquel, &livro, &clube, 50, "texto", -1), std::invalid_argument);
+}
+
+TEST_CASE_FIXTURE(CenarioCheckIn, "CheckIn: construtor que lança exceção não gasta id") {
+    CheckIn antes(&raquel, &livro, &clube, 50, "texto");
+    CHECK_THROWS_AS(CheckIn(&raquel, &livro, &clube, 0, "texto"), std::invalid_argument);
+    CheckIn depois(&raquel, &livro, &clube, 60, "texto");
+    CHECK(depois.getId() == antes.getId() + 1);
 }

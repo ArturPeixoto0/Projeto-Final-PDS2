@@ -27,7 +27,8 @@
  * A ordem dos membros importa: o C++ destrói na ordem inversa, então o clube
  * é destruído antes dos usuários e do livro (ele aponta para eles).
  */
-struct CenarioClube {
+namespace{
+ struct CenarioClube {
     User admin;
     User raquel;
     Book livro;
@@ -43,7 +44,7 @@ struct CenarioClube {
         raquel.entrarClube(&clube);
     }
 };
-
+}
 //conta:
 TEST_CASE("User: construtor guarda o nome") {
     User u("Raquel", "raquel@email.com", "senha123");
@@ -122,30 +123,53 @@ TEST_CASE("User: usuário novo não tem check-ins") {
 //clubes:
 TEST_CASE("User: criarClube retorna o clube criado") {
     User u("Raquel", "raquel@email.com", "senha123");
-    BookClub* clube = u.criarClube("Clube da Raquel");
+    Book livro("Dom Casmurro", "Machado de Assis", "romance", 300, "01");
+    BookClub* clube = u.criarClube("Clube da Raquel", &livro);
     REQUIRE(clube != nullptr);   // REQUIRE: se falhar, não adianta testar o resto
     CHECK(clube->getName() == "Clube da Raquel");
+    delete clube;   // criarClube usa new, então o teste precisa liberar
 }
- 
+
+TEST_CASE("User: criarClube já começa com o livro como leitura atual") {
+    User u("Raquel", "raquel@email.com", "senha123");
+    Book livro("Dom Casmurro", "Machado de Assis", "romance", 300, "01");
+    BookClub* clube = u.criarClube("Clube da Raquel", &livro);
+    REQUIRE(clube != nullptr);
+    CHECK(clube->getCurrentReading() == &livro);
+    delete clube;
+}
+
 TEST_CASE("User: quem cria o clube vira administrador dele") {
     User u("Raquel", "raquel@email.com", "senha123");
-    BookClub* clube = u.criarClube("Clube da Raquel");
+    Book livro("Dom Casmurro", "Machado de Assis", "romance", 300, "01");
+    BookClub* clube = u.criarClube("Clube da Raquel", &livro);
     REQUIRE(clube != nullptr);
     CHECK(clube->isAdmin(&u));
+    delete clube;
 }
+
  
 TEST_CASE("User: quem cria o clube passa a participar dele") {
     User u("Raquel", "raquel@email.com", "senha123");
-    BookClub* clube = u.criarClube("Clube da Raquel");
+    Book livro("Dom Casmurro", "Machado de Assis", "romance", 300, "01");
+    BookClub* clube = u.criarClube("Clube da Raquel", &livro);
     REQUIRE(clube != nullptr);
     CHECK(u.participaDe(clube));
     CHECK(u.getCurrentClubs().size() == 1);
+    delete clube;
 }
  
-// DECISÃO: nome de clube vazio é inválido (mesma regra do BookClub::renomear).
-TEST_CASE("User: criarClube com nome vazio retorna nullptr") {
+// Nome vazio: nome de clube vazio é inválido (mesma regra do BookClub::renomear).
+TEST_CASE("User: criarClube com nome vazio lança exceção") {
     User u("Raquel", "raquel@email.com", "senha123");
-    CHECK(u.criarClube("") == nullptr);
+    Book livro ("Dom Casmurro", "Machado de Assis", "romance", 300, "01");
+    CHECK_THROWS_AS(u.criarClube("", &livro), std::invalid_argument);
+    CHECK((u.getCurrentClubs().empty()));
+}
+
+TEST_CASE("User: criarClube com livro nulo lança exceção"){
+    User u("Raquel", "raquel@email.com", "senha123");
+    CHECK_THROWS_AS(u.criarClube("Clube da Raquel", nullptr), std::invalid_argument);
     CHECK(u.getCurrentClubs().empty());
 }
  
@@ -182,7 +206,7 @@ TEST_CASE("User: entrarClube duas vezes no mesmo clube falha na segunda") {
  
 TEST_CASE("User: entrarClube com nullptr falha") {
     User u("Raquel", "raquel@email.com", "senha123");
-    CHECK_FALSE(u.entrarClube(nullptr));
+    CHECK_THROWS_AS(u.entrarClube(nullptr), std::invalid_argument);
     CHECK(u.getCurrentClubs().empty());
 }
  
@@ -228,11 +252,15 @@ TEST_CASE("User: sairClube de clube em que não participa falha") {
  
 TEST_CASE("User: administrador não pode sair do próprio clube (US28)") {
     User u("Raquel", "raquel@email.com", "senha123");
-    BookClub* clube = u.criarClube("Clube da Raquel");
+    User outra("Julia", "julia@email.com", "senha 123");
+    Book livro("Dom Casmurro", "Machado de Assis", "romance", 300, "01");
+    BookClub* clube = u.criarClube("Clube da Raquel", &livro);
     REQUIRE(clube != nullptr);
+    outra.entrarClube(clube);
  
     CHECK_FALSE(u.sairClube(clube));
     CHECK(u.participaDe(clube));
+    delete clube;
 }
 
 //check-ins
@@ -279,19 +307,17 @@ TEST_CASE_FIXTURE(CenarioClube, "User: check-in sem finished não mexe no livrô
  
 // !! casos negativos (US18: página > 0 e comentário obrigatório) 
  
-TEST_CASE_FIXTURE(CenarioClube, "User: realizarCheckIn com página 0 falha") {
-    CHECK(raquel.realizarCheckIn(&clube, 0, "texto") == nullptr);
-    CHECK(raquel.getAllCheckIns().empty());
+TEST_CASE_FIXTURE(CenarioClube, "User: realizarCheckIn com página 0 lanca excecao") {
+    CHECK_THROWS_AS(raquel.realizarCheckIn(&clube, 0, "texto"), std::invalid_argument);
 }
  
-TEST_CASE_FIXTURE(CenarioClube, "User: realizarCheckIn com página negativa falha") {
-    CHECK(raquel.realizarCheckIn(&clube, -10, "texto") == nullptr);
-    CHECK(raquel.getTotalPages() == 0);
+TEST_CASE_FIXTURE(CenarioClube, "User: realizarCheckIn com página negativa lanca excecao") {
+    CHECK_THROWS_AS(raquel.realizarCheckIn(&clube, -10, "texto"), std::invalid_argument);
 }
  
 // não dá para estar numa página maior que o total do livro (300).
-TEST_CASE_FIXTURE(CenarioClube, "User: realizarCheckIn com página maior que o livro falha") {
-    CHECK(raquel.realizarCheckIn(&clube, 301, "texto") == nullptr);
+TEST_CASE_FIXTURE(CenarioClube, "User: realizarCheckIn com página maior que o livro lanca excecao") {
+    CHECK_THROWS_AS(raquel.realizarCheckIn(&clube, 301, "texto"), std::invalid_argument);
 }
  
 // Caso de borda: a última página do livro é válida.
@@ -303,8 +329,8 @@ TEST_CASE_FIXTURE(CenarioClube, "User: realizarCheckIn com texto vazio falha") {
     CHECK(raquel.realizarCheckIn(&clube, 50, "") == nullptr);
 }
  
-TEST_CASE_FIXTURE(CenarioClube, "User: realizarCheckIn com clube nullptr falha") {
-    CHECK(raquel.realizarCheckIn(nullptr, 50, "texto") == nullptr);
+TEST_CASE_FIXTURE(CenarioClube, "User: realizarCheckIn com clube nullptr lanca excecao") {
+    CHECK_THROWS_AS(raquel.realizarCheckIn(nullptr, 50, "texto"), std::invalid_argument);
 }
  
 TEST_CASE_FIXTURE(CenarioClube, "User: realizarCheckIn em clube do qual não participa falha") {
@@ -384,7 +410,7 @@ TEST_CASE_FIXTURE(CenarioClube, "User: sugerirLivro de livro que já está no ca
 }
  
 TEST_CASE_FIXTURE(CenarioClube, "User: sugerirLivro com livro nullptr falha") {
-    CHECK_FALSE(raquel.sugerirLivro(&clube, nullptr));
+    CHECK_THROWS_AS(raquel.sugerirLivro(&clube, nullptr), std::invalid_argument);
 }
  
 TEST_CASE_FIXTURE(CenarioClube, "User: sugerirLivro em clube do qual não participa falha") {
@@ -396,33 +422,39 @@ TEST_CASE_FIXTURE(CenarioClube, "User: sugerirLivro em clube do qual não partic
 // Para avaliar, o livro precisa já ter sido lido (status Passado ou lido).
 // Trocar a leitura atual faz o "livro" do cenário virar Passado.
 TEST_CASE_FIXTURE(CenarioClube, "User: avaliarLeitura de livro já lido funciona") {
-    Book proximo("A hora da estrela", "Clarice Lispector", "romance", 88, "02");
-    clube.adicionarLivro(&proximo);
-    clube.decidirProximaLeitura(&admin, &proximo);
- 
-    CHECK(raquel.avaliarLeitura(&clube, &livro, 5));
+    raquel.realizarCheckIn(&clube, 300, "Terminei!", true);
+    CHECK(raquel.avaliarLeitura(&clube, 5));
+
 }
  
 // Casos de borda da nota (o BookClub aceita de 1 a 5).
 TEST_CASE_FIXTURE(CenarioClube, "User: avaliarLeitura aceita os limites 1 e 5") {
-    Book proximo("A hora da estrela", "Clarice Lispector", "romance", 88, "02");
-    clube.adicionarLivro(&proximo);
-    clube.decidirProximaLeitura(&admin, &proximo);
- 
-    CHECK(raquel.avaliarLeitura(&clube, &livro, 1));
-    CHECK(admin.avaliarLeitura(&clube, &livro, 5));
+    raquel.realizarCheckIn(&clube, 300, "Terminei!", true);
+    admin.realizarCheckIn(&clube, 300, "Terminei também", true);
+
+    CHECK(raquel.avaliarLeitura(&clube, 1));
+    CHECK(admin.avaliarLeitura(&clube, 5));
 }
  
 TEST_CASE_FIXTURE(CenarioClube, "User: avaliarLeitura com nota fora de 1 a 5 falha") {
-    Book proximo("A hora da estrela", "Clarice Lispector", "romance", 88, "02");
-    clube.adicionarLivro(&proximo);
-    clube.decidirProximaLeitura(&admin, &proximo);
+    raquel.realizarCheckIn(&clube, 300, "Terminei", true);
  
-    CHECK_FALSE(raquel.avaliarLeitura(&clube, &livro, 0));
-    CHECK_FALSE(raquel.avaliarLeitura(&clube, &livro, 6));
-    CHECK_FALSE(raquel.avaliarLeitura(&clube, &livro, -1));
+    CHECK_FALSE(raquel.avaliarLeitura(&clube, 0));
+    CHECK_FALSE(raquel.avaliarLeitura(&clube, 6));
+    CHECK_FALSE(raquel.avaliarLeitura(&clube, -1));
+}
+
+TEST_CASE_FIXTURE(CenarioClube, "User: avaliarLeitura sem nenhum check-in falha") {
+    CHECK_FALSE(raquel.avaliarLeitura(&clube, 4));
+
 }
  
 TEST_CASE_FIXTURE(CenarioClube, "User: avaliarLeitura de livro ainda não terminado falha") {
-    CHECK_FALSE(raquel.avaliarLeitura(&clube, &livro, 4));  // livro ainda é o atual
+    raquel.realizarCheckIn(&clube, 50, "Ainda no começo");
+    CHECK_FALSE(raquel.avaliarLeitura(&clube, 4));  // livro ainda é o atual
+}
+
+TEST_CASE("User: avaliarLeitura com clube nulo lança exceção") {
+    User u("Raquel", "raquel@email.com", "senha123");
+    CHECK_THROWS_AS(u.avaliarLeitura(nullptr, 4), std::invalid_argument);
 }

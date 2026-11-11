@@ -7,7 +7,14 @@
 #include <string>
 #include <vector>
 
-UserProfile::UserProfile(User* user) : user(user) {}
+UserProfile::UserProfile(User* user){
+    if (user == nullptr) {
+        throw std::invalid_argument("Ponteiro nulo");
+    }
+    else {
+        this->user = user;
+    }
+}
 
 int UserProfile::getTotalPages() const {
     return this->user->getTotalPages();
@@ -59,10 +66,21 @@ void UserProfile::show_checkins() const {
     // O vetor está do mais antigo para o mais novo; andamos de trás para frente.
     for (int i = (int)checkIns.size() - 1; i >= 0; i--) {
         CheckIn* c = checkIns[i];
+        if (c == nullptr){
+            throw std::runtime_error("Ponteiro de Check in inválido");
+        }
+        if (c->getClub() == nullptr){
+            throw std::runtime_error("Check in sem clube");
+        }
+        if (c->getBook() == nullptr){
+            throw std::runtime_error("Check in sem livro");
+        }
+        else {
         std::cout << "[" << c->getDataHora() << "] "
                   << c->getClub()->getName() << " | "
                   << c->getBook()->getTitle() << " | pagina "
                   << c->getPage() << ": " << c->getText() << std::endl;
+        }
     }
 }
 

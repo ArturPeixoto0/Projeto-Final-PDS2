@@ -63,6 +63,8 @@ class BookClub {
         std::time_t clubCreation_;
         std::time_t startReading_;
         std::time_t endReading_;
+        int id_;                ///< Identificador único do clube (usado nos arquivos de dados).
+        static int proximoId_;  ///< Próximo id a ser gerado (um só contador para todos os clubes).
  
     public:
         /**
@@ -72,11 +74,17 @@ class BookClub {
          * @param name Nome do clube.
          * @param type Tipo do clube.
          * @param isPrivate Se true, só entra quem tiver o código de convite.
+         * @param id Identificador do clube. Se for 0 (padrão), um id novo é
+         *        gerado. Se for maior que 0, esse id é usado (ao carregar dos
+         *        arquivos) e os próximos ids gerados serão maiores que ele.
+         * @throws std::invalid_argument se founder for nulo, se o nome for
+         *         vazio ou se id for negativo.
          */
         BookClub(User* founder,
                  const std::string& name,
                  const std::string& type,
-                 bool isPrivate = false);
+                 bool isPrivate = false,
+                 int id = 0);
 
         /**
          * @brief Cria um clube do livro que já começa com uma leitura atual.
@@ -87,12 +95,16 @@ class BookClub {
          *        o clube começa sem leitura.
          * @param type Tipo do clube.
          * @param isPrivate Se true, só entra quem tiver o código de convite.
+         * @param id Identificador do clube (0 gera um novo; ver o outro construtor).
+         * @throws std::invalid_argument se founder for nulo, se o nome for
+         *         vazio ou se id for negativo.
          */
         BookClub(User* founder,
                  const std::string& name,
                  Book* firstReading,
                  const std::string& type = "democratico",
-                 bool isPrivate = false);
+                 bool isPrivate = false,
+                 int id = 0);
 
         BookClub(const BookClub&) = delete;
         BookClub& operator=(const BookClub&) = delete;
@@ -106,6 +118,8 @@ class BookClub {
  
         // ---------- GETTERS ----------
  
+        /** @brief Retorna o identificador único do clube. */
+        int getId() const;
         /** @brief Retorna o nome do clube. */
         const std::string& getName() const;
         /** @brief Retorna o tipo do clube. */
@@ -133,7 +147,8 @@ class BookClub {
         /**
          * @brief Define o total de páginas lidas no clube.
          *        Chamado por User::realizarCheckIn para atualizar a métrica.
-         * @param pages Novo total. Valores negativos são ignorados.
+         * @param pages Novo total.
+         * @throws std::invalid_argument se pages for negativo.
          */
         void setReadPages(int pages);
         /** @brief Retorna o total de livros lidos no clube. */
@@ -180,8 +195,9 @@ class BookClub {
          * @brief Adiciona um usuário ao clube.
          * @param user Usuário que quer entrar.
          * @param codigo Código de convite. Obrigatório em clube privado.
-         * @return false se user for nulo, já for membro, o clube estiver
+         * @return false se user já for membro, o clube estiver
          *         encerrado ou o código estiver errado em clube privado.
+         * @throws std::invalid_argument se user for nulo.
          */
         bool entrarNoClube(User* user, const std::string& codigo = "");
  
@@ -190,6 +206,7 @@ class BookClub {
          * @param user Usuário que quer sair.
          * @return false se não for membro ou se for o administrador (que
          *         deve antes transferir a administração).
+         * @throws std::invalid_argument se user for nulo.
          */
         bool sairDoClube(User* user);
  
@@ -200,8 +217,9 @@ class BookClub {
          *        As páginas lidas são atualizadas pelo User via setReadPages,
          *        então este método não mexe nas métricas (senão contaria duas vezes).
          * @param checkIn Check-in a adicionar (continua pertencendo ao autor).
-         * @return false se for nulo, se o autor não for membro, se o check-in
+         * @return false se o autor não for membro, se o check-in
          *         for de outro clube ou se já estiver no feed.
+         * @throws std::invalid_argument se checkIn for nulo.
          */
         bool adicionarCheckIn(CheckIn* checkIn);
 
@@ -216,13 +234,15 @@ class BookClub {
  
         /**
          * @brief Adiciona um livro ao catálogo com status futuro.
-         * @return false se livro for nulo ou já estiver no catálogo.
+         * @return false se o livro já estiver no catálogo.
+         * @throws std::invalid_argument se livro for nulo.
          */
         bool adicionarLivro(Book* livro);
  
         /**
          * @brief Remove um livro do catálogo (junto com suas notas e votos).
          * @return false se o livro não estiver no catálogo.
+         * @throws std::invalid_argument se livro for nulo.
          */
         bool removerLivro(Book* livro);
  
@@ -231,7 +251,9 @@ class BookClub {
          * @param user Membro que avalia.
          * @param livro Livro com status passado.
          * @param nota Nota de 1 a 5.
-         * @return false se user não for membro, o livro não for passado ou a nota for inválida.
+         * @return false se user não for membro ou o livro não for passado.
+         * @throws std::invalid_argument se user ou livro forem nulos, ou se a
+         *         nota não estiver entre 1 e 5.
          */
         bool avaliarLivro(User* user, Book* livro, int nota);
  
@@ -240,6 +262,7 @@ class BookClub {
          * @param user Membro que vota.
          * @param livro Livro com status futuro.
          * @return false se user não for membro, o livro não for futuro ou o membro já votou nele.
+         * @throws std::invalid_argument se user ou livro forem nulos.
          */
         bool votarProximaLeitura(User* user, Book* livro);
  
@@ -252,12 +275,14 @@ class BookClub {
          * @brief Gera um novo código de convite.
          * @param actor Deve ser o administrador.
          * @return O novo código, ou string vazia se actor não for admin.
+         * @throws std::invalid_argument se actor for nulo.
          */
         std::string criarConvite(User* actor);
  
         /**
          * @brief Remove um membro do clube.
          * @return false se actor não for admin, alvo não for membro ou alvo for o admin.
+         * @throws std::invalid_argument se actor ou alvo forem nulos.
          */
         bool removerMembro(User* actor, User* alvo);
  
@@ -266,13 +291,22 @@ class BookClub {
          *        O livro atual anterior vira passado.
          * @param livro Livro futuro do catálogo.
          * @return false se actor não for admin ou o livro não for futuro.
+         * @throws std::invalid_argument se actor ou livro forem nulos.
          */
         bool decidirProximaLeitura(User* actor, Book* livro);
  
-        /** @brief Altera a privacidade. @return false se actor não for admin. */
+        /**
+         * @brief Altera a privacidade.
+         * @return false se actor não for admin.
+         * @throws std::invalid_argument se actor for nulo.
+         */
         bool alterarPrivacidade(User* actor, bool isPrivate);
  
-        /** @brief Altera o nome do clube. @return false se actor não for admin ou o nome for vazio. */
+        /**
+         * @brief Altera o nome do clube.
+         * @return false se actor não for admin.
+         * @throws std::invalid_argument se actor for nulo ou o nome for vazio.
+         */
         bool renomear(User* actor, const std::string& novoNome);
  
         /**
@@ -280,26 +314,30 @@ class BookClub {
          *        Como o dono do check-in é o autor, o clube pede ao autor que o
          *        apague (User::apagarCheckIn), que tira do feed e faz o delete.
          * @return false se actor não for admin ou o check-in não estiver no feed.
+         * @throws std::invalid_argument se actor ou checkIn forem nulos.
          */
         bool apagarCheckIn(User* actor, CheckIn* checkIn);
  
         /**
          * @brief Define a duração da leitura atual.
          * @param dias Quantidade de dias (maior que 0).
-         * @return false se actor não for admin, não houver leitura atual ou dias for inválido.
+         * @return false se actor não for admin ou não houver leitura atual.
+         * @throws std::invalid_argument se actor for nulo ou dias for menor ou igual a zero.
          */
         bool definirTempoLeitura(User* actor, int dias);
  
         /**
          * @brief Apaga um comentário (tira do check-in e faz o delete).
-         * @return false se actor não for admin, se o comentário for nulo, de
+         * @return false se actor não for admin, se o comentário for de
          *         outro clube ou não estiver na lista do seu check-in.
+         * @throws std::invalid_argument se actor ou comentario forem nulos.
          */
         bool apagarComentario(User* actor, Comment* comentario);
  
         /**
          * @brief Transfere a administração para outro membro.
          * @return false se actor não for admin ou alvo não for membro.
+         * @throws std::invalid_argument se actor ou alvo forem nulos.
          */
         bool transferirAdmin(User* actor, User* alvo);
 };

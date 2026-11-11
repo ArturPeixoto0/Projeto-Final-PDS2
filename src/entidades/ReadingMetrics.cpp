@@ -1,7 +1,16 @@
 #include "ReadingMetrics.hpp"
 #include "Book.hpp"
+#include <stdexcept>
 
-ReadingMetrics::ReadingMetrics(Book* reading): reading(reading), currentPage(0), grade(-1), finished(false) {}
+ReadingMetrics::ReadingMetrics(Book* reading){
+    if (reading == nullptr){
+        throw std::invalid_argument("Ponteiro nulo");
+    }
+    this->reading = reading;
+    currentPage = 0;   
+    grade = -1; 
+    finished = false;
+}
 
 Book* ReadingMetrics::getReading(){
     return reading;
@@ -12,12 +21,22 @@ int ReadingMetrics::getCurrentPage(){
 }
 
 void ReadingMetrics::addPages(int pages){
-    if (currentPage+pages <= reading->getPages() && pages >= 0){
+    if (pages < 0){
+        throw std::invalid_argument("Número de páginas negativo");
+    }
+    else if (pages == 0){
+        throw std::invalid_argument("Número de páginas igual a zero");
+    }
+    else if (currentPage+pages > reading->getPages()){
+        throw std::out_of_range("Número de páginas além do total");
+    }
+    else {
         currentPage += pages;
         if (currentPage == reading->getPages()){
             this->finish();
         }
     }
+    
 }
 
 double ReadingMetrics::getGrade(){
@@ -25,9 +44,18 @@ double ReadingMetrics::getGrade(){
 }
 
 void ReadingMetrics::setGrade(double grade){
-    if (grade > 5 || grade < 0 || finished == false)
-        return;
-    this->grade = grade;
+    if (finished == false) {
+        throw std::logic_error("Leitura incompleta");
+    }
+    else if (grade > 5) {
+        throw std::invalid_argument("Nota maior que 5");
+    }
+    else if (grade < 0) {
+        throw std::invalid_argument("Nota menor que 0");
+    }
+    else {
+        this->grade = grade;
+    }
 }
 
 bool ReadingMetrics::isFinished(){
@@ -35,8 +63,12 @@ bool ReadingMetrics::isFinished(){
 }
 
 void ReadingMetrics::finish(){
-    if (currentPage == reading->getPages())
+    if (currentPage != reading->getPages()){
+        throw std::logic_error("Leitura incompleta");
+    }
+    else {
         finished = true;
+    }
 }
 
 void ReadingMetrics::reset(){

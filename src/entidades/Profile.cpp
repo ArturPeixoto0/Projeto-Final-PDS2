@@ -1,5 +1,6 @@
 #include "Profile.hpp"
 #include <string>
+#include <stdexcept>
 
 // Definição da constante declarada no .hpp (necessária se ela for usada por referência).
 const int Profile::MAX_DESCRIPTION_LENGTH;
@@ -20,7 +21,7 @@ std::string Profile::getHeaderPath() const {
 
 bool Profile::setDescription(const std::string& description) {
     if ((int)description.size() > MAX_DESCRIPTION_LENGTH) {
-        return false;
+        throw std::out_of_range("Descrição excede o tamanho permitido");
     }
     this->Description = description;
     return true;
