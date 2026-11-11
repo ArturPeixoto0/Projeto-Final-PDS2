@@ -130,7 +130,7 @@ TEST_CASE_FIXTURE(CenarioClube, "ClubProfile: setDescription altera a descriçã
 TEST_CASE_FIXTURE(CenarioClube, "ClubProfile: descrição acima do limite é recusada") {
     perfil.setDescription("original");
     std::string grande(Profile::MAX_DESCRIPTION_LENGTH + 1, 'a');
-    CHECK_THROWS_AS(perfil.setDescription(grande), std::length_error);
+    CHECK_THROWS_AS(perfil.setDescription(grande), std::out_of_range);
     CHECK(perfil.getDescription() == "original");
 }
 
