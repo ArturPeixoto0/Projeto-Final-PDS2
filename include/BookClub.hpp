@@ -126,7 +126,11 @@ class BookClub {
         const std::string& getType() const;
         /** @brief Retorna true se o clube é privado. */
         bool isPrivate() const;
-        /** @brief Retorna true se o clube está ativo (não encerrado). */
+        /**
+         * @brief Retorna true se o clube está ativo (não encerrado).
+         *        Como o administrador nunca sai (US28), hoje todo clube
+         *        fica ativo; o atributo continua para ser salvo nos arquivos.
+         */
         bool isActive() const;
         /** @brief Retorna true se há uma leitura em andamento (livro atual no catálogo). */
         bool isReading() const;
@@ -204,8 +208,9 @@ class BookClub {
         /**
          * @brief Remove um usuário do clube.
          * @param user Usuário que quer sair.
-         * @return false se não for membro ou se for o administrador (que
-         *         deve antes transferir a administração).
+         * @return false se não for membro ou se for o administrador. O
+         *         administrador nunca sai (US28): ele transfere a
+         *         administração antes ou, se estiver sozinho, apaga o clube.
          * @throws std::invalid_argument se user for nulo.
          */
         bool sairDoClube(User* user);

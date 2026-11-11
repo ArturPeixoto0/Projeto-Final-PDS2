@@ -98,7 +98,7 @@ class User {
          *        e apagando a métrica de leitura daquele clube.
          * @param club Clube de onde vai sair.
          * @return false se não participa ou se o clube recusar a saída
-         *         (administrador com outros membros).
+         *         (o administrador nunca sai, US28).
          * @throws std::invalid_argument se club for nulo.
          */
         bool sairClube(BookClub* club);

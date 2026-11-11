@@ -407,18 +407,14 @@ bool BookClub::sairDoClube(User* user) {
     if (!this->isMember(user)) {
         return false;
     }
-    // O admin só pode sair se for o último membro (senão, deve transferir antes).
-    if (user == this->admin_ && this->members_.size() > 1) {
+    // O admin nunca sai (US28). Se houver outros membros, ele transfere a
+    // administração antes (transferirAdmin); se estiver sozinho, o clube é
+    // apagado. Assim todo clube sempre tem um admin, e active_ fica true.
+    if (user == this->admin_) {
         return false;
     }
 
     removerDaLista(this->members_, user);
-
-    // Saiu o último membro: o clube fica sem admin e é encerrado.
-    if (user == this->admin_) {
-        this->admin_ = nullptr;
-        this->active_ = false;
-    }
 
     if (user->participaDe(this)) {
         user->sairClube(this);

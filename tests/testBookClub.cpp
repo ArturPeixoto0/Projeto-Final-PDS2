@@ -199,16 +199,18 @@ TEST_CASE_FIXTURE(CenarioClube, "BookClub: admin não sai enquanto houver outros
     CHECK(clube.isAdmin(&admin));
 }
 
-TEST_CASE("BookClub: admin sozinho pode sair, e o clube é encerrado") {
+TEST_CASE("BookClub: admin sozinho também não sai (US28)") {
     User admin("Admin", "admin@email.com", "senha123");
     User raquel("Raquel", "raquel@email.com", "senha123");
     BookClub clube(&admin, "Clube do Machado", "classicos");
 
-    CHECK(admin.sairClube(&clube));
-    CHECK_FALSE(clube.isActive());
-    CHECK(clube.getAdmin() == nullptr);
-    CHECK(clube.getNumberMembers() == 0);
-    CHECK_FALSE(raquel.entrarClube(&clube));   // clube encerrado não aceita ninguém
+    CHECK_FALSE(admin.sairClube(&clube));
+    CHECK_FALSE(clube.sairDoClube(&admin));
+    CHECK(clube.isActive());
+    CHECK(clube.isAdmin(&admin));
+    CHECK(clube.getNumberMembers() == 1);
+    CHECK(admin.participaDe(&clube));
+    CHECK(raquel.entrarClube(&clube));   // o clube continua aceitando membros
 }
 
 TEST_CASE("BookClub: destrutor do clube tira o clube da lista dos membros") {

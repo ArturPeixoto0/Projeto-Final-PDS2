@@ -64,6 +64,10 @@ User::~User() {
                     }
                 }
             }
+            // Se este User for o admin e estiver sozinho, sairClube recusa
+            // (US28): o clube continua apontando para ele. Por isso o clube
+            // precisa ser apagado ANTES dos seus membros (o BancoDeDados apaga
+            // clubes, depois usuários, depois livros).
             this->sairClube(club);
         }
         
