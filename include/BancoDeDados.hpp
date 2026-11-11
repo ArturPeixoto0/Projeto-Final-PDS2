@@ -22,7 +22,13 @@ class BookClub;
  *
  * Arquivos (dentro da pasta passada no construtor):
  *  - books.json: lista de livros;
- *  - users.json: lista de usuários (com perfil, totais e senha).
+ *  - users.json: lista de usuários (com perfil, totais e senha);
+ *  - clubs.json: ÍNDICE, só a lista com os ids dos clubes. O C++11 não
+ *    consegue listar os arquivos de uma pasta, então é por este índice
+ *    que o banco descobre quais clubs/<id>.json existem;
+ *  - clubs/<id>.json: um clube (dados, membros e catálogo);
+ *  - readingmetrics/<id do usuário>.json: as métricas de leitura do
+ *    usuário em cada clube.
  *
  * Posse dos objetos:
  *  - O BancoDeDados é DONO dos livros, usuários e clubes e os apaga no
@@ -34,7 +40,13 @@ class BookClub;
  * Por causa dessa posse, o BancoDeDados não pode ser copiado: as duas
  * cópias apagariam os mesmos objetos.
  *
+ * Referência quebrada (um id que não existe, ou um arquivo citado no
+ * índice que sumiu): a carga ignora aquele item e segue, sem quebrar.
+ *
  * Limitações conhecidas:
+ *  - na carga, o administrador vira o primeiro membro do clube (ele é
+ *    passado como fundador). Se a administração foi transferida, a ordem
+ *    dos membros muda, e com ela o desempate do ranking;
  *  - a senha é salva em texto puro;
  *  - salvar reescreve o arquivo inteiro; se o programa fechar no meio da
  *    escrita, o arquivo pode ficar cortado;
@@ -54,6 +66,10 @@ class BancoDeDados {
         void salvarUsuarios() const;
         void carregarLivros();
         void carregarUsuarios();
+        void salvarClubes() const;
+        void carregarClubes();
+        void salvarMetricas() const;
+        void carregarMetricas();
 
     public:
         /**
@@ -105,6 +121,16 @@ class BancoDeDados {
          *         um usuário com o mesmo id.
          */
         void adicionarUsuario(User* usuario);
+
+        /**
+         * @brief Coloca um clube no banco. Se der certo, o banco vira DONO
+         *        dele. Se lançar exceção, quem chamou continua dono.
+         *        O administrador e os membros precisam estar no banco; senão,
+         *        na próxima carga eles viram referência quebrada.
+         * @throws std::invalid_argument se clube for nulo ou se já houver um
+         *         clube com o mesmo id.
+         */
+        void adicionarClube(BookClub* clube);
 
         // ---------- ARQUIVOS ----------
 
