@@ -30,7 +30,8 @@
  *  - No destrutor: devolve o destino antigo. Como o destrutor roda sozinho
  *    no fim do TEST_CASE, o cout sempre volta ao normal, mesmo se o teste falhar.
  */
-struct CapturaSaida {
+namespace{
+    struct CapturaSaida {
     std::stringstream buffer;
     std::streambuf* antigo;
 
@@ -76,7 +77,7 @@ struct CenarioLeitura {
         bia.entrarClube(&clube);
     }
 };
-
+}
 // ------------------------------ HERANÇA ------------------------------
 
 TEST_CASE("ClubProfile: é um Profile") {

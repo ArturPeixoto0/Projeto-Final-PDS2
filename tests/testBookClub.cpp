@@ -27,7 +27,8 @@
  * destruídos na ordem inversa, o clube é destruído primeiro e ainda encontra
  * os Users vivos para tirá-los do clube.
  */
-struct CenarioClube {
+namespace{
+ struct CenarioClube {
     User admin;
     User raquel;
     User artur;
@@ -47,6 +48,7 @@ struct CenarioClube {
         raquel.entrarClube(&clube);
     }
 };
+}
 
 // =====================================================================
 // Construtor e estado inicial

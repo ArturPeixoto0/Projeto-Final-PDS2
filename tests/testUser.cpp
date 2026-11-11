@@ -27,7 +27,8 @@
  * A ordem dos membros importa: o C++ destrói na ordem inversa, então o clube
  * é destruído antes dos usuários e do livro (ele aponta para eles).
  */
-struct CenarioClube {
+namespace{
+ struct CenarioClube {
     User admin;
     User raquel;
     Book livro;
@@ -43,7 +44,7 @@ struct CenarioClube {
         raquel.entrarClube(&clube);
     }
 };
-
+}
 //conta:
 TEST_CASE("User: construtor guarda o nome") {
     User u("Raquel", "raquel@email.com", "senha123");
