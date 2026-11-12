@@ -24,10 +24,9 @@
 ## Visão geral da solução
 O sistema foi feito em C++ com orientação a objetos. As principais funcionalidades são:
 - Usuários: cadastro com nome, email e senha, e perfil com descrição.
-- Clubes do livro: criação de clubes (públicos ou privados, com código de convite), entrada e saída de membros e um administrador por clube.
-- Catálogo e votação: os membros sugerem livros, votam na próxima leitura e o administrador decide a leitura atual e o prazo.
+- Clubes do livro: criação de clubes, entrada e saída de membros e um administrador por clube.
 - Check-ins: o usuário registra a página em que parou com um comentário sobre a leitura; os outros membros podem comentar nos check-ins.
-- Métricas e ranking: paginômetro e livrômetro de cada usuário, ranking de leitura do clube, média de páginas, porcentagem de quem terminou e média das avaliações.
+- Métricas e ranking: paginômetro e livrômetro de cada usuário, ranking de leitura do clube, média de páginas e média das avaliações.
 - Persistência: os dados são salvos e carregados em arquivos JSON (pasta dados/) pela classe BancoDeDados.
 - Interface: interface no terminal feita com a biblioteca FTXUI, com abas de Feed, Clubes e Perfil e janelas para novo check-in, novo clube e comentários.
 
@@ -36,7 +35,7 @@ O sistema foi feito em C++ com orientação a objetos. As principais funcionalid
 | Classe | Responsabilidade |
 |---|---|
 | `User` | Dados da conta e ações do usuário (criar/entrar em clube, check-in, comentar, avaliar) |
-| `BookClub` | Membros, administrador, catálogo de livros, leitura atual, feed e métricas do clube |
+| `BookClub` | Membros, administrador, leitura atual, feed |
 | `Book` | Dados de um livro (título, autor, gênero, páginas, ISBN) |
 | `CheckIn` | Registro de progresso de leitura (página, texto, data) e seus comentários |
 | `Comment` | Comentário feito em um check-in |
@@ -80,7 +79,7 @@ make testUser test       # roda só os testes de uma classe (testBook, testBookC
 ```bash
 cmake -S . -B build-ui           # só na primeira vez
 cmake --build build-ui
-./build-ui/clube_ui'''
+./build-ui/clube_ui
 ```
 
 Teclas: ← → trocam de aba, ↑ ↓ rolam a tela, n abre um novo check-in, c cria um clube, m abre os comentários, Tab passa de um campo para outro, Esc fecha a janela e q sai.
