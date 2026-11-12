@@ -62,6 +62,12 @@ dados/             arquivos JSON salvos pelo programa
 design/            cartões CRC e histórias de usuário
 ```
 
+## Requisitos
+- Compilador C++ com suporte a C++11 (testes) e C++17 (interface): g++ ou clang++
+- make
+- cmake 3.14 ou mais novo (só para a interface)
+- Internet na primeira compilação da interface (o CMake baixa o FTXUI automaticamente)
+
 ## Como rodar os testes
 Sempre a partir da pasta raiz do projeto:
 
