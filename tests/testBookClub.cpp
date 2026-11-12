@@ -199,16 +199,18 @@ TEST_CASE_FIXTURE(CenarioClube, "BookClub: admin não sai enquanto houver outros
     CHECK(clube.isAdmin(&admin));
 }
 
-TEST_CASE("BookClub: admin sozinho pode sair, e o clube é encerrado") {
+TEST_CASE("BookClub: admin sozinho também não sai (US28)") {
     User admin("Admin", "admin@email.com", "senha123");
     User raquel("Raquel", "raquel@email.com", "senha123");
     BookClub clube(&admin, "Clube do Machado", "classicos");
 
-    CHECK(admin.sairClube(&clube));
-    CHECK_FALSE(clube.isActive());
-    CHECK(clube.getAdmin() == nullptr);
-    CHECK(clube.getNumberMembers() == 0);
-    CHECK_FALSE(raquel.entrarClube(&clube));   // clube encerrado não aceita ninguém
+    CHECK_FALSE(admin.sairClube(&clube));
+    CHECK_FALSE(clube.sairDoClube(&admin));
+    CHECK(clube.isActive());
+    CHECK(clube.isAdmin(&admin));
+    CHECK(clube.getNumberMembers() == 1);
+    CHECK(admin.participaDe(&clube));
+    CHECK(raquel.entrarClube(&clube));   // o clube continua aceitando membros
 }
 
 TEST_CASE("BookClub: destrutor do clube tira o clube da lista dos membros") {
@@ -695,4 +697,134 @@ TEST_CASE("BookClub: construtor que lança exceção não gasta id") {
     CHECK_THROWS_AS(BookClub(&admin, "", "classicos"), std::invalid_argument);
     BookClub depois(&admin, "Clube 2", "classicos");
     CHECK(depois.getId() == antes.getId() + 1);
+}
+
+// =====================================================================
+// Restauração (usada pelo BancoDeDados na carga dos arquivos)
+// =====================================================================
+// 1592222400 = 15/06/2020 12:00 (UTC): uma data fixa do passado.
+
+TEST_CASE_FIXTURE(CenarioClube, "BookClub: getStartReading e getEndReading acompanham a leitura") {
+    CHECK(clube.getStartReading() == 0);   // ainda sem leitura
+    CHECK(clube.getEndReading() == 0);
+
+    clube.adicionarLivro(&livro1);
+    clube.decidirProximaLeitura(&admin, &livro1);
+    CHECK(clube.getStartReading() > 0);
+    CHECK(clube.getEndReading() == 0);     // prazo ainda não definido
+
+    clube.definirTempoLeitura(&admin, 5);
+    CHECK(clube.getEndReading() == clube.getStartReading() + 5 * 24 * 60 * 60);
+}
+
+TEST_CASE_FIXTURE(CenarioClube, "BookClub: restaurarEstado coloca de volta os dados salvos") {
+    std::time_t criacao = 1592222400;
+    std::time_t inicio = criacao + 24 * 60 * 60;
+    std::time_t fim = inicio + 10 * 24 * 60 * 60;
+    clube.restaurarEstado("ABC1234567", true, 500, 3, criacao, inicio, fim);
+
+    CHECK(clube.getInviteCode(&admin) == "ABC1234567");
+    CHECK(clube.isActive());
+    CHECK(clube.getReadPages() == 500);
+    CHECK(clube.getReadBooks() == 3);
+    CHECK(clube.getClubCreation() == criacao);
+    CHECK(clube.getStartReading() == inicio);
+    CHECK(clube.getEndReading() == fim);
+}
+
+// É assim que o BancoDeDados vai colocar os membros de um clube privado:
+// restaura o código salvo e entra com ele.
+TEST_CASE("BookClub: depois do restaurarEstado, o código salvo abre o clube privado") {
+    User admin("Admin", "admin@email.com", "senha123");
+    User raquel("Raquel", "raquel@email.com", "senha123");
+    BookClub privado(&admin, "Clube Secreto", "classicos", true);
+    privado.restaurarEstado("CODIGO1234", true, 0, 0, 1592222400, 0, 0);
+
+    CHECK_FALSE(raquel.entrarClube(&privado, "errado"));
+    CHECK(raquel.entrarClube(&privado, "CODIGO1234"));
+    CHECK(privado.isMember(&raquel));
+}
+
+TEST_CASE_FIXTURE(CenarioClube, "BookClub: restaurarEstado com código vazio ou totais negativos lança exceção") {
+    CHECK_THROWS_AS(clube.restaurarEstado("", true, 0, 0, 1592222400, 0, 0), std::invalid_argument);
+    CHECK_THROWS_AS(clube.restaurarEstado("ABC1234567", true, -1, 0, 1592222400, 0, 0), std::invalid_argument);
+    CHECK_THROWS_AS(clube.restaurarEstado("ABC1234567", true, 0, -1, 1592222400, 0, 0), std::invalid_argument);
+}
+
+TEST_CASE_FIXTURE(CenarioClube, "BookClub: restaurarLivroNoCatalogo aceita os três status sem efeito colateral") {
+    clube.restaurarLivroNoCatalogo(&livro1, BookClub::Status::Passado);
+    clube.restaurarLivroNoCatalogo(&livro2, BookClub::Status::Atual);
+    clube.restaurarLivroNoCatalogo(&livro3, BookClub::Status::Futuro);
+
+    REQUIRE(clube.getCatalog().size() == 3);
+    CHECK(clube.getCatalog()[0].status == BookClub::Status::Passado);
+    CHECK(clube.getCatalog()[1].status == BookClub::Status::Atual);
+    CHECK(clube.getCatalog()[2].status == BookClub::Status::Futuro);
+    CHECK(clube.getCurrentReading() == &livro2);
+    // Diferente de decidirProximaLeitura, não conta livro lido nem muda datas:
+    CHECK(clube.getReadBooks() == 0);
+    CHECK(clube.getStartReading() == 0);
+}
+
+TEST_CASE_FIXTURE(CenarioClube, "BookClub: restaurarLivroNoCatalogo recusa nulo, livro repetido e segunda leitura atual") {
+    clube.restaurarLivroNoCatalogo(&livro1, BookClub::Status::Atual);
+    CHECK_THROWS_AS(clube.restaurarLivroNoCatalogo(nullptr, BookClub::Status::Futuro), std::invalid_argument);
+    CHECK_THROWS_AS(clube.restaurarLivroNoCatalogo(&livro1, BookClub::Status::Futuro), std::invalid_argument);
+    CHECK_THROWS_AS(clube.restaurarLivroNoCatalogo(&livro2, BookClub::Status::Atual), std::invalid_argument);
+    CHECK(clube.getCatalog().size() == 1);
+}
+
+TEST_CASE_FIXTURE(CenarioClube, "BookClub: restaurarNota aceita nota de quem não é mais membro") {
+    clube.restaurarLivroNoCatalogo(&livro1, BookClub::Status::Passado);
+    clube.restaurarNota(&livro1, &raquel, 4);
+    clube.restaurarNota(&livro1, &artur, 2);   // artur não é membro (pode ter saído)
+    CHECK(clube.mediaAvaliacoes(&livro1) == 3);
+}
+
+TEST_CASE_FIXTURE(CenarioClube, "BookClub: restaurarNota com dados inválidos lança exceção") {
+    clube.restaurarLivroNoCatalogo(&livro1, BookClub::Status::Passado);
+    CHECK_THROWS_AS(clube.restaurarNota(nullptr, &raquel, 4), std::invalid_argument);
+    CHECK_THROWS_AS(clube.restaurarNota(&livro1, nullptr, 4), std::invalid_argument);
+    CHECK_THROWS_AS(clube.restaurarNota(&livro1, &raquel, 0), std::invalid_argument);
+    CHECK_THROWS_AS(clube.restaurarNota(&livro1, &raquel, 6), std::invalid_argument);
+    CHECK_THROWS_AS(clube.restaurarNota(&livro2, &raquel, 4), std::invalid_argument);   // fora do catálogo
+}
+
+TEST_CASE_FIXTURE(CenarioClube, "BookClub: restaurarVoto aceita voto de quem não é mais membro") {
+    clube.restaurarLivroNoCatalogo(&livro3, BookClub::Status::Futuro);
+    clube.restaurarVoto(&livro3, &raquel);
+    clube.restaurarVoto(&livro3, &artur);
+    CHECK(clube.totalVotos(&livro3) == 2);
+}
+
+TEST_CASE_FIXTURE(CenarioClube, "BookClub: restaurarVoto com dados inválidos ou repetido lança exceção") {
+    clube.restaurarLivroNoCatalogo(&livro3, BookClub::Status::Futuro);
+    clube.restaurarVoto(&livro3, &raquel);
+    CHECK_THROWS_AS(clube.restaurarVoto(&livro3, &raquel), std::invalid_argument);   // repetido
+    CHECK_THROWS_AS(clube.restaurarVoto(nullptr, &raquel), std::invalid_argument);
+    CHECK_THROWS_AS(clube.restaurarVoto(&livro3, nullptr), std::invalid_argument);
+    CHECK_THROWS_AS(clube.restaurarVoto(&livro1, &raquel), std::invalid_argument);   // fora do catálogo
+    CHECK(clube.totalVotos(&livro3) == 1);
+}
+
+TEST_CASE_FIXTURE(CenarioClube, "BookClub: restaurarCheckIn aceita check-in de quem não é membro") {
+    clube.restaurarLivroNoCatalogo(&livro1, BookClub::Status::Atual);
+    CheckIn c(&artur, &livro1, &clube, 10, "li antes de sair do clube");
+
+    CHECK_FALSE(clube.adicionarCheckIn(&c));   // a ação normal exige ser membro
+    clube.restaurarCheckIn(&c);                // a restauração não
+    REQUIRE(clube.getFeed().size() == 1);
+    CHECK(clube.getFeed()[0] == &c);
+}
+
+TEST_CASE_FIXTURE(CenarioClube, "BookClub: restaurarCheckIn recusa nulo, outro clube e check-in repetido") {
+    BookClub outro(&admin, "Outro clube", "classicos");
+    CheckIn deOutro(&raquel, &livro1, &outro, 10, "texto");
+    CheckIn c(&raquel, &livro1, &clube, 10, "texto");
+
+    CHECK_THROWS_AS(clube.restaurarCheckIn(nullptr), std::invalid_argument);
+    CHECK_THROWS_AS(clube.restaurarCheckIn(&deOutro), std::invalid_argument);
+    clube.restaurarCheckIn(&c);
+    CHECK_THROWS_AS(clube.restaurarCheckIn(&c), std::invalid_argument);
+    CHECK(clube.getFeed().size() == 1);
 }

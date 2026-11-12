@@ -7,6 +7,7 @@ TESTS_DIR=./tests
 BUILD_TESTS_DIR=./tests/buildTests
 SRC_DIR=./src
 ENTIDADES_DIR=./src/entidades
+PERSISTENCIA_DIR=./src/persistencia
     
 
 CLASS_OBJS = ${BUILD_DIR}/Book.o \
@@ -17,7 +18,8 @@ ${BUILD_DIR}/Comment.o \
 ${BUILD_DIR}/User.o \
 ${BUILD_DIR}/Profile.o \
 ${BUILD_DIR}/ClubProfile.o \
-${BUILD_DIR}/UserProfile.o 
+${BUILD_DIR}/UserProfile.o \
+${BUILD_DIR}/BancoDeDados.o
 
 TESTS_OBJS = ${BUILD_TESTS_DIR}/testBook.o \
 ${BUILD_TESTS_DIR}/testBookClub.o \
@@ -27,7 +29,8 @@ ${BUILD_TESTS_DIR}/testUser.o \
 ${BUILD_TESTS_DIR}/testProfile.o \
 ${BUILD_TESTS_DIR}/testClubProfile.o \
 ${BUILD_TESTS_DIR}/testUserProfile.o \
-${BUILD_TESTS_DIR}/testReadingMetrics.o
+${BUILD_TESTS_DIR}/testReadingMetrics.o \
+${BUILD_TESTS_DIR}/testBancoDeDados.o
 
 OBJS = ${CLASS_OBJS} \
 ${BUILD_DIR}/main_ui.o
@@ -61,6 +64,9 @@ ${BUILD_DIR}/ClubProfile.o: ${INCLUDE_DIR}/ClubProfile.hpp ${INCLUDE_DIR}/Profil
 
 ${BUILD_DIR}/UserProfile.o: ${INCLUDE_DIR}/UserProfile.hpp ${INCLUDE_DIR}/Profile.hpp ${ENTIDADES_DIR}/UserProfile.cpp
 	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${ENTIDADES_DIR}/UserProfile.cpp -o ${BUILD_DIR}/UserProfile.o 
+
+${BUILD_DIR}/BancoDeDados.o: ${INCLUDE_DIR}/BancoDeDados.hpp ${INCLUDE_DIR}/json.hpp ${INCLUDE_DIR}/Book.hpp ${INCLUDE_DIR}/User.hpp ${INCLUDE_DIR}/BookClub.hpp ${INCLUDE_DIR}/UserProfile.hpp ${INCLUDE_DIR}/Profile.hpp ${INCLUDE_DIR}/ReadingMetrics.hpp ${INCLUDE_DIR}/CheckIn.hpp ${INCLUDE_DIR}/Comment.hpp ${PERSISTENCIA_DIR}/BancoDeDados.cpp
+	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${PERSISTENCIA_DIR}/BancoDeDados.cpp -o ${BUILD_DIR}/BancoDeDados.o
 
 ${BUILD_DIR}/main_ui.o: ${INCLUDE_DIR}/Book.hpp ${INCLUDE_DIR}/BookClub.hpp ${INCLUDE_DIR}/CheckIn.hpp ${INCLUDE_DIR}/Comment.hpp ${INCLUDE_DIR}/User.hpp ${INCLUDE_DIR}/Profile.hpp ${INCLUDE_DIR}/ClubProfile.hpp ${INCLUDE_DIR}/UserProfile.hpp ${INCLUDE_DIR}/ReadingMetrics.hpp ${SRC_DIR}/main_ui.cpp
 	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${SRC_DIR}/main_ui.cpp -o ${BUILD_DIR}/main_ui.o
@@ -97,6 +103,9 @@ ${BUILD_TESTS_DIR}/testMain.o: ${INCLUDE_DIR}/doctest.h ${TESTS_DIR}/testMain.cp
 ${BUILD_TESTS_DIR}/testReadingMetrics.o: ${INCLUDE_DIR}/doctest.h ${TESTS_DIR}/testReadingMetrics.cpp ${INCLUDE_DIR}/ReadingMetrics.hpp
 	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${TESTS_DIR}/testReadingMetrics.cpp -o ${BUILD_TESTS_DIR}/testReadingMetrics.o
 
+${BUILD_TESTS_DIR}/testBancoDeDados.o: ${INCLUDE_DIR}/doctest.h ${TESTS_DIR}/testBancoDeDados.cpp ${INCLUDE_DIR}/BancoDeDados.hpp
+	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${TESTS_DIR}/testBancoDeDados.cpp -o ${BUILD_TESTS_DIR}/testBancoDeDados.o
+
 ifneq ($(filter testBook,$(MAKECMDGOALS)),)
 SELECTED_TEST = ${BUILD_TESTS_DIR}/testBook.o
 NAME_EXECUTABLE = testBook
@@ -124,19 +133,22 @@ NAME_EXECUTABLE = testUserProfile
 else ifneq ($(filter testReadingMetrics,$(MAKECMDGOALS)),)
 SELECTED_TEST = ${BUILD_TESTS_DIR}/testReadingMetrics.o
 NAME_EXECUTABLE = testReadingMetrics
+else ifneq ($(filter testBancoDeDados,$(MAKECMDGOALS)),)
+SELECTED_TEST = ${BUILD_TESTS_DIR}/testBancoDeDados.o
+NAME_EXECUTABLE = testBancoDeDados
 else 
 SELECTED_TEST = ${TESTS_OBJS}
 NAME_EXECUTABLE = allTests
 endif
 
 
-.PHONY: test testBook testBookClub testCheckIn testComment testUser testProfile testClubProfile testUserProfile testReadingMetrics
+.PHONY: test testBook testBookClub testCheckIn testComment testUser testProfile testClubProfile testUserProfile testReadingMetrics testBancoDeDados
 
 test: ${SELECTED_TEST} ${CLASS_OBJS} ${BUILD_TESTS_DIR}/testMain.o
 	${CC} $^ -static -o ${BUILD_TESTS_DIR}/${NAME_EXECUTABLE}
 	./${BUILD_TESTS_DIR}/${NAME_EXECUTABLE}
 
-testBook testBookClub testCheckIn testComment testUser testProfile testClubProfile testUserProfile testReadingMetrics:
+testBook testBookClub testCheckIn testComment testUser testProfile testClubProfile testUserProfile testReadingMetrics testBancoDeDados:
 
 
 

@@ -185,3 +185,10 @@ TEST_CASE_FIXTURE(CenarioComentario, "Comment: construtor que lança exceção n
     Comment depois("Eu também", &raquel, checkIn, &clube);
     CHECK(depois.get_id() == antes.get_id() + 1);
 }
+
+TEST_CASE_FIXTURE(CenarioComentario, "Comment: restaurarData coloca de volta a data salva") {
+    REQUIRE(checkIn != nullptr);
+    Comment com("Também acho!", &admin, checkIn, &clube);
+    com.restaurarData(1592222400);   // 15/06/2020, uma data do passado
+    CHECK(com.get_createdat() == 1592222400);
+}

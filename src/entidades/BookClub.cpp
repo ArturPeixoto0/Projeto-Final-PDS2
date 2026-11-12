@@ -224,6 +224,14 @@ std::time_t BookClub::getClubCreation() const {
     return this->clubCreation_;
 }
 
+std::time_t BookClub::getStartReading() const {
+    return this->startReading_;
+}
+
+std::time_t BookClub::getEndReading() const {
+    return this->endReading_;
+}
+
 std::string BookClub::getInviteCode(const User* actor) const {
     if (this->isAdmin(actor)) {
         return this->inviteCode_;
@@ -407,18 +415,14 @@ bool BookClub::sairDoClube(User* user) {
     if (!this->isMember(user)) {
         return false;
     }
-    // O admin só pode sair se for o último membro (senão, deve transferir antes).
-    if (user == this->admin_ && this->members_.size() > 1) {
+    // O admin nunca sai (US28). Se houver outros membros, ele transfere a
+    // administração antes (transferirAdmin); se estiver sozinho, o clube é
+    // apagado. Assim todo clube sempre tem um admin, e active_ fica true.
+    if (user == this->admin_) {
         return false;
     }
 
     removerDaLista(this->members_, user);
-
-    // Saiu o último membro: o clube fica sem admin e é encerrado.
-    if (user == this->admin_) {
-        this->admin_ = nullptr;
-        this->active_ = false;
-    }
 
     if (user->participaDe(this)) {
         user->sairClube(this);
@@ -723,4 +727,100 @@ bool BookClub::transferirAdmin(User* actor, User* alvo) {
     }
     this->admin_ = alvo;
     return true;
+}
+
+// =====================================================================
+// Restauração (usada só pelo BancoDeDados)
+// =====================================================================
+
+void BookClub::restaurarEstado(const std::string& inviteCode, bool active,
+                               int readPages, int readBooks,
+                               std::time_t clubCreation,
+                               std::time_t startReading,
+                               std::time_t endReading) {
+    if (inviteCode.empty()) {
+        throw std::invalid_argument("Codigo de convite nao pode ser vazio");
+    }
+    if (readPages < 0 || readBooks < 0) {
+        throw std::invalid_argument("Totais do clube nao podem ser negativos");
+    }
+    this->inviteCode_ = inviteCode;
+    this->active_ = active;
+    this->readPages_ = readPages;
+    this->readBooks_ = readBooks;
+    this->clubCreation_ = clubCreation;
+    this->startReading_ = startReading;
+    this->endReading_ = endReading;
+}
+
+void BookClub::restaurarLivroNoCatalogo(Book* livro, Status status) {
+    if (livro == nullptr) {
+        throw std::invalid_argument("Ponteiro de livro nulo");
+    }
+    if (indiceNoCatalogo(this->catalog_, livro) != -1) {
+        throw std::invalid_argument("Livro repetido no catalogo");
+    }
+    // Só pode haver uma leitura atual por vez.
+    if (status == Status::Atual && indiceDaLeituraAtual(this->catalog_) != -1) {
+        throw std::invalid_argument("Clube ja tem uma leitura atual");
+    }
+
+    CatalogEntry novo;
+    novo.book = livro;
+    novo.status = status;
+    this->catalog_.push_back(novo);
+}
+
+void BookClub::restaurarNota(Book* livro, const User* user, int nota) {
+    if (livro == nullptr) {
+        throw std::invalid_argument("Ponteiro de livro nulo");
+    }
+    if (user == nullptr) {
+        throw std::invalid_argument("Ponteiro de usuario nulo");
+    }
+    if (nota < 1 || nota > 5) {
+        throw std::invalid_argument("Nota deve ser de 1 a 5");
+    }
+    int indice = indiceNoCatalogo(this->catalog_, livro);
+    if (indice == -1) {
+        throw std::invalid_argument("Livro fora do catalogo");
+    }
+    this->catalog_[indice].ratings[user] = nota;
+}
+
+void BookClub::restaurarVoto(Book* livro, const User* user) {
+    if (livro == nullptr) {
+        throw std::invalid_argument("Ponteiro de livro nulo");
+    }
+    if (user == nullptr) {
+        throw std::invalid_argument("Ponteiro de usuario nulo");
+    }
+    int indice = indiceNoCatalogo(this->catalog_, livro);
+    if (indice == -1) {
+        throw std::invalid_argument("Livro fora do catalogo");
+    }
+
+    std::vector<const User*>& votos = this->catalog_[indice].votes;
+    for (int i = 0; i < (int)votos.size(); i++) {
+        if (votos[i] == user) {
+            throw std::invalid_argument("Voto repetido");
+        }
+    }
+    votos.push_back(user);
+}
+
+void BookClub::restaurarCheckIn(CheckIn* checkIn) {
+    if (checkIn == nullptr) {
+        throw std::invalid_argument("Ponteiro de check-in nulo");
+    }
+    if (checkIn->getClub() != this) {
+        throw std::invalid_argument("Check-in de outro clube");
+    }
+    for (int i = 0; i < (int)this->feed_.size(); i++) {
+        if (this->feed_[i] == checkIn) {
+            throw std::invalid_argument("Check-in repetido no feed");
+        }
+    }
+    // Sem conferir isMember: o autor pode ter saído do clube (US08).
+    this->feed_.push_back(checkIn);
 }

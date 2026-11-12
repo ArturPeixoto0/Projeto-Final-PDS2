@@ -71,3 +71,7 @@ BookClub* Comment::get_club() const {
 std::time_t Comment::get_createdat() const {
     return this->_created_at;
 }
+
+void Comment::restaurarData(std::time_t data) {
+    this->_created_at = data;
+}

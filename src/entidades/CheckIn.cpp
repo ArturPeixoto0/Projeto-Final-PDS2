@@ -95,6 +95,14 @@ std::string CheckIn::getDataHora() const {
     return std::string(buffer);
 }
 
+std::time_t CheckIn::getDataHoraNumero() const {
+    return this->dataHora;
+}
+
+void CheckIn::restaurarDataHora(std::time_t dataHora) {
+    this->dataHora = dataHora;
+}
+
 void CheckIn::eraseAllComments() {
     for (int i = 0; i < (int)this->comments.size(); i++) {
         delete this->comments[i];

@@ -140,3 +140,63 @@ TEST_CASE("ReadingMetrics: setGrade com limite inferior violado"){
     
     delete livro;
 }
+
+// ---------------------- CONSTRUTOR DE CARGA ----------------------
+// Usado pelo BancoDeDados para recriar uma métrica salva nos arquivos.
+
+TEST_CASE("ReadingMetrics: construtor de carga guarda os valores salvos"){
+    Book* livro = new Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
+    ReadingMetrics metrica(livro, 120, -1, false);
+    CHECK(metrica.getReading() == livro);
+    CHECK(metrica.getCurrentPage() == 120);
+    CHECK(metrica.getGrade() == -1);
+    CHECK(metrica.isFinished() == false);
+    delete livro;
+}
+
+TEST_CASE("ReadingMetrics: construtor de carga com leitura terminada e nota"){
+    Book* livro = new Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
+    ReadingMetrics metrica(livro, 360, 4.5, true);
+    CHECK(metrica.getCurrentPage() == 360);
+    CHECK(metrica.getGrade() == 4.5);
+    CHECK(metrica.isFinished() == true);
+    delete livro;
+}
+
+TEST_CASE("ReadingMetrics: construtor de carga aceita os limites (página 0, notas 0 e 5)"){
+    Book* livro = new Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
+    CHECK_NOTHROW(ReadingMetrics(livro, 0, -1, false));
+    CHECK_NOTHROW(ReadingMetrics(livro, 360, 0, true));
+    CHECK_NOTHROW(ReadingMetrics(livro, 360, 5, true));
+    delete livro;
+}
+
+TEST_CASE("ReadingMetrics: construtor de carga com ponteiro nulo"){
+    CHECK_THROWS_AS(ReadingMetrics(nullptr, 0, -1, false), std::invalid_argument);
+}
+
+TEST_CASE("ReadingMetrics: construtor de carga com página fora do livro"){
+    Book* livro = new Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
+    CHECK_THROWS_AS(ReadingMetrics(livro, -1, -1, false), std::invalid_argument);
+    CHECK_THROWS_AS(ReadingMetrics(livro, 361, -1, false), std::invalid_argument);
+    delete livro;
+}
+
+TEST_CASE("ReadingMetrics: construtor de carga com nota inválida"){
+    Book* livro = new Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
+    CHECK_THROWS_AS(ReadingMetrics(livro, 360, 5.5, true), std::invalid_argument);
+    CHECK_THROWS_AS(ReadingMetrics(livro, 360, -0.5, true), std::invalid_argument);
+    delete livro;
+}
+
+TEST_CASE("ReadingMetrics: construtor de carga terminado fora da última página"){
+    Book* livro = new Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
+    CHECK_THROWS_AS(ReadingMetrics(livro, 200, -1, true), std::invalid_argument);
+    delete livro;
+}
+
+TEST_CASE("ReadingMetrics: construtor de carga com nota sem ter terminado"){
+    Book* livro = new Book("Os sete maridos de Evelyn Hugo","Taylor Jenkins Reid","drama",360,"01");
+    CHECK_THROWS_AS(ReadingMetrics(livro, 200, 3, false), std::invalid_argument);
+    delete livro;
+}
