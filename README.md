@@ -90,10 +90,10 @@ cmake --build build-ui
 ```
 
 Teclas: ← → trocam de aba, ↑ ↓ rolam a tela, n abre um novo check-in, c cria um clube, m abre os comentários, Tab passa de um campo para outro, Esc fecha a janela e q sai.
-Documentação
 
-## A documentação das classes é gerada com o Doxygen:
+## Documentação
+A documentação das classes é gerada com o Doxygen (o resultado fica na pasta `docs/`, abra `docs/html/index.html` no navegador):
 
 ```bash
 doxygen Doxyfile
-
+```

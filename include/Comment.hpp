@@ -22,11 +22,11 @@ class CheckIn;
  */
 class Comment {
     private:
-        User* _author;
-        BookClub* _club;
-        CheckIn* _checkin;
-        std::string _text;
-        std::time_t _created_at;
+        User* _author;           ///< Autor do comentário.
+        BookClub* _club;         ///< Clube do check-in comentado.
+        CheckIn* _checkin;       ///< Check-in comentado (dono deste comentário).
+        std::string _text;       ///< Texto do comentário (1 a MAX_LENGTH caracteres).
+        std::time_t _created_at; ///< Data e hora em que o comentário foi feito.
         int _id; ///< Identificador único do comentário (usado nos arquivos de dados).
 
         static int _proximo_id; ///< Próximo id a ser gerado (um só contador para todos os comentários).
@@ -54,10 +54,15 @@ class Comment {
         /** @brief Retorna o identificador único do comentário. */
         int get_id() const;
 
+        /** @brief Retorna o texto do comentário. */
         std::string get_text() const;
+        /** @brief Retorna o autor do comentário. */
         User* get_author() const;
+        /** @brief Retorna o check-in comentado. */
         CheckIn* get_checkin() const;
+        /** @brief Retorna o clube do check-in comentado. */
         BookClub* get_club() const;
+        /** @brief Retorna a data e hora do comentário (segundos desde 1970). */
         std::time_t get_createdat() const;
 
         /**

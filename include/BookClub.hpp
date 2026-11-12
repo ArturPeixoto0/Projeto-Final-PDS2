@@ -298,6 +298,7 @@ class BookClub {
         /**
          * @brief Define a próxima leitura, passando o livro para status atual.
          *        O livro atual anterior vira passado.
+         * @param actor Usuário que está pedindo a mudança (precisa ser o admin).
          * @param livro Livro futuro do catálogo.
          * @return false se actor não for admin ou o livro não for futuro.
          * @throws std::invalid_argument se actor ou livro forem nulos.
@@ -329,6 +330,7 @@ class BookClub {
  
         /**
          * @brief Define a duração da leitura atual.
+         * @param actor Usuário que está pedindo a mudança (precisa ser o admin).
          * @param dias Quantidade de dias (maior que 0).
          * @return false se actor não for admin ou não houver leitura atual.
          * @throws std::invalid_argument se actor for nulo ou dias for menor ou igual a zero.

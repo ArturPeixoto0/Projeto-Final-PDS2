@@ -25,12 +25,12 @@ class BookClub;
  *  - users.json: lista de usuários (com perfil, totais e senha);
  *  - clubs.json: ÍNDICE, só a lista com os ids dos clubes. O C++11 não
  *    consegue listar os arquivos de uma pasta, então é por este índice
- *    que o banco descobre quais clubs/<id>.json existem;
- *  - clubs/<id>.json: um clube (dados, membros e catálogo);
- *  - readingmetrics/<id do usuário>.json: as métricas de leitura do
+ *    que o banco descobre quais clubs/[id].json existem;
+ *  - clubs/[id].json: um clube (dados, membros e catálogo);
+ *  - readingmetrics/[id do usuário].json: as métricas de leitura do
  *    usuário em cada clube;
- *  - checkins/<id do clube>.json: o feed do clube, na ordem do feed;
- *  - comments/<id do check-in>.json: os comentários de um check-in.
+ *  - checkins/[id do clube].json: o feed do clube, na ordem do feed;
+ *  - comments/[id do check-in].json: os comentários de um check-in.
  *
  * Posse dos objetos:
  *  - O BancoDeDados é DONO dos livros, usuários e clubes e os apaga no

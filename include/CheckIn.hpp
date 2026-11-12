@@ -1,6 +1,6 @@
 /**
  * @file CheckIn.hpp
- * @brief declara a classe CheckIn
+ * @brief Declaração da classe CheckIn.
  */
 #ifndef CHECKIN_H
 #define CHECKIN_H
@@ -29,17 +29,17 @@ class Book;
  */
 class CheckIn {
 private:
-    std::string text;
+    std::string text; ///< Comentário do check-in (pode ser vazio).
 
-    User* user;
-    Book* book;
-    BookClub* club;
+    User* user;     ///< Autor do check-in.
+    Book* book;     ///< Livro lido.
+    BookClub* club; ///< Clube em que o check-in foi feito.
 
     int page; ///< Página em que o usuário estava ao fazer o check-in.
 
-    std::vector<Comment*> comments;
+    std::vector<Comment*> comments; ///< Comentários recebidos (o CheckIn é dono deles).
 
-    std::time_t dataHora;
+    std::time_t dataHora; ///< Data e hora da postagem.
 
     int id; ///< Identificador único do check-in (usado nos arquivos de dados).
 
@@ -78,10 +78,15 @@ public:
     CheckIn(const CheckIn&) = delete;
     CheckIn& operator=(const CheckIn&) = delete;
 
+    /** @brief Retorna o texto do check-in. */
     std::string getText() const;
+    /** @brief Retorna a página em que o usuário estava ao fazer o check-in. */
     int getPage() const;
+    /** @brief Retorna o autor do check-in. */
     User* getUser() const;
+    /** @brief Retorna o livro do check-in. */
     Book* getBook() const;
+    /** @brief Retorna o clube em que o check-in foi feito. */
     BookClub* getClub() const;
 
     /** @brief Retorna os comentários do check-in (pode ser alterado). */

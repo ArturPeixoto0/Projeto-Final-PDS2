@@ -1,6 +1,6 @@
 /**
  * @file Book.hpp
- * @brief declara a classe book
+ * @brief Declaração da classe Book.
  */
 #ifndef BOOK_H
 #define BOOK_H
@@ -20,11 +20,11 @@ class User;
  */
 class Book {
     private:
-        std::string title;      
-        std::string author;
-        std::string genre;
-        int pages;
-        std::string ISBN;   
+        std::string title;  ///< Título do livro (nunca vazio).
+        std::string author; ///< Autor do livro.
+        std::string genre;  ///< Gênero literário.
+        int pages;          ///< Número total de páginas (sempre maior que zero).
+        std::string ISBN;   ///< Código ISBN do livro.
         int id; ///< Identificador único do livro (usado nos arquivos de dados).
 
         /// Próximo id a ser gerado. É static: um só contador para todos os livros.
@@ -57,22 +57,49 @@ class Book {
         int getId() const;
 
         /** @throws std::invalid_argument se o título for vazio. */
+        /**
+         * @brief Altera o título do livro.
+         * @param title Novo título.
+         * @throws std::invalid_argument se o título for vazio.
+         */
         void setTitle(const std::string title);
+        /** @brief Retorna o título do livro. */
         std::string getTitle() const;
 
+        /**
+         * @brief Altera o autor do livro.
+         * @param author Novo autor.
+         */
         void setAuthor(const std::string author);
+        /** @brief Retorna o autor do livro. */
         std::string getAuthor() const;
 
+        /**
+         * @brief Altera o gênero literário do livro.
+         * @param genre Novo gênero.
+         */
         void setGenre(const std::string genre);
+        /** @brief Retorna o gênero literário do livro. */
         std::string getGenre() const;
 
-        /** @throws std::invalid_argument se pages for menor ou igual a zero. */
+        /**
+         * @brief Altera o número total de páginas do livro.
+         * @param pages Novo número de páginas.
+         * @throws std::invalid_argument se pages for menor ou igual a zero.
+         */
         void setPages(int pages);
+        /** @brief Retorna o número total de páginas do livro. */
         int getPages() const;
 
+        /**
+         * @brief Altera o código ISBN do livro.
+         * @param ISBN Novo código ISBN.
+         */
         void setISBN(const std::string ISBN);
+        /** @brief Retorna o código ISBN do livro. */
         std::string getISBN() const;
-        
+
+        /** @brief Destrutor. O livro não é dono de nenhum outro objeto. */
         ~Book();
 
 };
