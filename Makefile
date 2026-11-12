@@ -40,8 +40,12 @@ ${BUILD_TESTS_DIR}/testBancoDeDados.o
 #   make run  -> compila e abre o programa
 #   make test -> compila e roda os testes (não usa o FTXUI)
 # ---------------------------------------------------------------
+# No Windows o gcovr instalado pelo pip nem sempre fica no PATH,
+# entao chamamos ele pelo python.
+GCOVR = gcovr
 ifeq ($(OS),Windows_NT)
 GERADOR = -G "MinGW Makefiles"
+GCOVR = python -m gcovr
 endif
 
 all:
@@ -153,10 +157,10 @@ NAME_EXECUTABLE = allTests
 endif
 
 
-.PHONY: all run test testBook testBookClub testCheckIn testComment testUser testProfile testClubProfile testUserProfile testReadingMetrics testBancoDeDados
+.PHONY: all run test coverage clean testBook testBookClub testCheckIn testComment testUser testProfile testClubProfile testUserProfile testReadingMetrics testBancoDeDados
 
 test: ${SELECTED_TEST} ${CLASS_OBJS} ${BUILD_TESTS_DIR}/testMain.o
-	${CC} $^ -static -o ${BUILD_TESTS_DIR}/${NAME_EXECUTABLE}
+	${CC} $^ ${LDFLAGS} -static -o ${BUILD_TESTS_DIR}/${NAME_EXECUTABLE}
 	./${BUILD_TESTS_DIR}/${NAME_EXECUTABLE}
 
 testBook testBookClub testCheckIn testComment testUser testProfile testClubProfile testUserProfile testReadingMetrics testBancoDeDados:
@@ -164,4 +168,13 @@ testBook testBookClub testCheckIn testComment testUser testProfile testClubProfi
 
 
 clean:
-	rm -f ${BUILD_DIR}/*.o ${BUILD_DIR}/programa ${BUILD_TESTS_DIR}/*.o
+	rm -f ${BUILD_DIR}/*.o ${BUILD_DIR}/programa ${BUILD_TESTS_DIR}/*.o ${BUILD_DIR}/*.gc* ${BUILD_TESTS_DIR}/*.gc*
+
+# Cobertura dos testes (precisa do gcovr: pip install gcovr).
+# Recompila tudo com --coverage, roda os testes e mostra a cobertura de
+# cada arquivo das classes. O "-" na frente do make test faz o relatorio
+# sair mesmo se algum teste falhar.
+coverage:
+	$(MAKE) clean
+	-$(MAKE) test CFLAGS="$(CFLAGS) --coverage -O0" LDFLAGS="--coverage"
+	$(GCOVR) -r . --filter src/entidades/ --filter src/persistencia/ --print-summary

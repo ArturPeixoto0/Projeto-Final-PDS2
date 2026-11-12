@@ -124,7 +124,7 @@ Book* dracula = new Book("Drácula","Bram Stoker","Terror",360,"002");
         BookClub* clube = julia->getCurrentClubs()[clubeEscolhido];
         try {
             if (julia->realizarCheckIn(clube, pagina, textoDigitado) == nullptr) {
-                mensagemErro = "Esse clube não tem leitura atual.";
+                mensagemErro = "Check-in recusado: confira a página e o texto (e se o clube tem leitura atual).";
                 return;
             }
         } catch (const std::exception& erro) {

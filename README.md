@@ -75,6 +75,13 @@ make test                # roda todos os testes
 make testUser test       # roda só os testes de uma classe (testBook, testBookClub, testCheckIn, ...)
 ```
 
+### Cobertura dos testes
+A cobertura é medida com o [gcovr](https://gcovr.com) (instalação: `pip install gcovr`):
+
+```bash
+make coverage            # recompila com --coverage, roda os testes e mostra a cobertura de cada arquivo
+```
+
 ## Como rodar a interface
 ```bash
 cmake -S . -B build-ui           # só na primeira vez
