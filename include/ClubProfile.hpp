@@ -28,6 +28,9 @@ private:
 public:
     ClubProfile(BookClub* club);
 
+    /** @brief Retorna o clube dono deste perfil. */
+    BookClub* getClub()const;
+
     std::string getName()const override;
     /** @brief Check-ins do feed do clube. */
     std::vector<CheckIn*> getAllCheckIn()const;

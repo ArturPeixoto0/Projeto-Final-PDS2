@@ -19,6 +19,10 @@ ClubProfile::ClubProfile(BookClub* club){
     
 }
 
+BookClub* ClubProfile::getClub() const {
+    return this->club;
+}
+
 std::string ClubProfile::getName() const {
     return this->club->getName();
 }
