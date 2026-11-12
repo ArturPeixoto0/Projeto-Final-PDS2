@@ -4,3 +4,4 @@
 /tests/buildTests/*
 !/tests/buildTests/.gitkeep
 tests/dadosTeste/**/*.json
+docs/

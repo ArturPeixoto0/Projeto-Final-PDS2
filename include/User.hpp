@@ -24,21 +24,20 @@ class ReadingMetrics;
  * Oferece as ações que o usuário pode realizar: criar e entrar em clubes,
  * fazer check ins, comentar e avaliar leituras.
  */
-
 class User {
     private:
 
-        std::string name; //nome do User
-        std::string email; //email da conta do User
-        std::string password; //senha da conta do User
-        std::vector<BookClub*> currentClubs; //vetor com todos os clubes atuais do User
-        std::vector<CheckIn*> allCheckIns; //vetor com todos os check-ins já feitos pelo User
-        std::map<BookClub*, ReadingMetrics*> allMetrics;
-        int totalPages = 0; //paginômetro total do usuário
-        int totalBooks = 0; //livrômetro total do usuário
-        UserProfile profile; //perfil do User (inicializar com profile(this) no .cpp)
-        int id; //identificador único do User (usado nos arquivos de dados)
-        static int proximoId; //próximo id a ser gerado (um só contador para todos os Users)
+        std::string name;                                ///< Nome do usuário.
+        std::string email;                               ///< Email da conta.
+        std::string password;                            ///< Senha da conta.
+        std::vector<BookClub*> currentClubs;             ///< Clubes de que o usuário participa.
+        std::vector<CheckIn*> allCheckIns;               ///< Check-ins já feitos (o User é dono deles).
+        std::map<BookClub*, ReadingMetrics*> allMetrics; ///< Progresso de leitura em cada clube (o User é dono).
+        int totalPages = 0;                              ///< Paginômetro: total de páginas lidas.
+        int totalBooks = 0;                              ///< Livrômetro: total de livros terminados.
+        UserProfile profile;                             ///< Perfil público do usuário.
+        int id;                                          ///< Identificador único (usado nos arquivos de dados).
+        static int proximoId;                            ///< Próximo id a ser gerado (um contador para todos os Users).
 
     public:
         /**
@@ -56,20 +55,33 @@ class User {
              const std::string& password,
              int id = 0);
              
+        /// @brief Destrutor: sai dos clubes e apaga os check-ins e as métricas do usuário.
         ~User();
 
         User(const User&) = delete;
         User& operator = (const User&) = delete;
 
         //dados da conta:
-        int getId() const; //retorna o identificador único do usuário
+        /// @brief Retorna o identificador único do usuário.
+        int getId() const;
 
-        std::string getName() const; //retorna o nome do usuário
+        /// @brief Retorna o nome do usuário.
+        std::string getName() const;
 
-        void setName(const std::string& name); //altera o nome do usuário
+        /**
+         * @brief Altera o nome do usuário.
+         * @param name Novo nome.
+         */
+        void setName(const std::string& name);
 
-        std::string getEmail() const; // retorna email da conta
+        /// @brief Retorna o email da conta.
+        std::string getEmail() const;
 
+        /**
+         * @brief Confere se uma senha está correta (usado no login).
+         * @param attempt Senha digitada.
+         * @return true se for igual à senha da conta, false caso contrário.
+         */
         bool checkPassword(const std::string& attempt) const;
 
         /**
@@ -79,14 +91,34 @@ class User {
          */
         std::string getPassword() const;
 
-        //perfil: 
+        //perfil:
+        /// @brief Retorna o perfil público do usuário, permitindo alterá-lo.
         UserProfile& getProfile();
+
+        /// @brief Retorna o perfil público do usuário, só para leitura.
         const UserProfile& getProfile() const;
 
         //clubes:
+        /// @brief Retorna os clubes de que o usuário participa.
         const std::vector<BookClub*>& getCurrentClubs() const;
-        bool participaDe(const BookClub* club) const; //verifica se participa
-    
+
+        /**
+         * @brief Verifica se o usuário é membro de um clube.
+         * @param club Clube a verificar.
+         * @return true se for membro, false caso contrário.
+         * @throws std::invalid_argument se club for nulo.
+         */
+        bool participaDe(const BookClub* club) const;
+
+        /**
+         * @brief Cria um clube do livro, com o usuário como membro e administrador.
+         * @param clubName Nome do clube.
+         * @param reading Primeira leitura do clube.
+         * @return O clube criado. Quem chamou fica responsável por apagá-lo
+         *         (ou entregá-lo ao BancoDeDados).
+         * @throws std::invalid_argument se reading for nulo ou se o nome
+         *         for vazio (lançada pelo construtor de BookClub).
+         */
         BookClub* criarClube(const std::string& clubName, Book* reading);
         
         /**
@@ -111,7 +143,9 @@ class User {
         bool sairClube(BookClub* club);
 
         //check-ins e comentarios:
+        /// @brief Retorna todos os check-ins do usuário, do mais antigo para o mais novo.
         const std::vector<CheckIn*>& getAllCheckIns() const;
+
         /**
          * @brief Página em que o usuário está na leitura do clube.
          * @return -1 se não participa do clube; 0 se participa mas ainda não
@@ -135,6 +169,13 @@ class User {
         CheckIn* realizarCheckIn(BookClub* club, int page, const std::string& text,
                                 bool finished = false);
     
+        /**
+         * @brief Apaga um check-in do próprio usuário: tira do feed do clube
+         *        e libera a memória.
+         * @param checkIn Check-in a apagar.
+         * @return true se apagou; false se checkIn for nulo ou não for
+         *         deste usuário (cada um só apaga os seus).
+         */
         bool apagarCheckIn(CheckIn* checkIn);
 
         /**
@@ -148,13 +189,34 @@ class User {
          */
         Comment* comentar(CheckIn* checkIn, const std::string& text);
     
-        //livros: 
-        bool sugerirLivro(BookClub* club, Book* book); 
+        //livros:
+        /**
+         * @brief Sugere um livro para o catálogo de futuras leituras do clube.
+         * @param club Clube que recebe a sugestão.
+         * @param book Livro sugerido.
+         * @return true se o livro entrou no catálogo; false se o usuário não
+         *         for membro ou se o clube recusar (por exemplo, livro repetido).
+         * @throws std::invalid_argument se club ou book forem nulos.
+         */
+        bool sugerirLivro(BookClub* club, Book* book);
+
+        /**
+         * @brief Dá uma nota ao livro que o usuário leu no clube.
+         * @param club Clube da leitura.
+         * @param nota Nota de 0 a 5.
+         * @return true se a nota foi registrada; false se o usuário não tiver
+         *         leitura nesse clube ou se a nota estiver fora de 0 a 5.
+         * @throws std::invalid_argument se club for nulo.
+         * @throws std::logic_error se a leitura ainda não terminou.
+         */
         bool avaliarLeitura (BookClub* club, double nota);
 
         //métricas:
-        int getTotalPages() const; //paginometro
-        int getTotalBooks() const; //livrometro
+        /// @brief Paginômetro: total de páginas já lidas, somando todos os clubes.
+        int getTotalPages() const;
+
+        /// @brief Livrômetro: total de livros que o usuário já terminou.
+        int getTotalBooks() const;
 
         /**
          * @brief Métrica de leitura do usuário em um clube (para salvar).
