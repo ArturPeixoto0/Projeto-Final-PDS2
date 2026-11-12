@@ -32,11 +32,24 @@ ${BUILD_TESTS_DIR}/testUserProfile.o \
 ${BUILD_TESTS_DIR}/testReadingMetrics.o \
 ${BUILD_TESTS_DIR}/testBancoDeDados.o
 
-OBJS = ${CLASS_OBJS} \
-${BUILD_DIR}/main_ui.o
-    
-all: ${BUILD_DIR} ${OBJS}
-	${CC} ${CFLAGS} ${OBJS} -o ${BUILD_DIR}/programa
+# ---------------------------------------------------------------
+# Programa principal: a interface (FTXUI).
+# Quem compila a interface é o CMake (CMakeLists.txt), porque ele baixa
+# e compila o FTXUI sozinho. Na primeira vez precisa de internet e do cmake.
+#   make      -> compila o programa (build-ui/clube_ui)
+#   make run  -> compila e abre o programa
+#   make test -> compila e roda os testes (não usa o FTXUI)
+# ---------------------------------------------------------------
+ifeq ($(OS),Windows_NT)
+GERADOR = -G "MinGW Makefiles"
+endif
+
+all:
+	cmake -S . -B build-ui $(GERADOR)
+	cmake --build build-ui
+
+run: all
+	./build-ui/clube_ui
 
 ${BUILD_DIR}/Book.o: ${INCLUDE_DIR}/Book.hpp ${ENTIDADES_DIR}/Book.cpp
 	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${ENTIDADES_DIR}/Book.cpp -o ${BUILD_DIR}/Book.o 
@@ -68,8 +81,6 @@ ${BUILD_DIR}/UserProfile.o: ${INCLUDE_DIR}/UserProfile.hpp ${INCLUDE_DIR}/Profil
 ${BUILD_DIR}/BancoDeDados.o: ${INCLUDE_DIR}/BancoDeDados.hpp ${INCLUDE_DIR}/json.hpp ${INCLUDE_DIR}/Book.hpp ${INCLUDE_DIR}/User.hpp ${INCLUDE_DIR}/BookClub.hpp ${INCLUDE_DIR}/UserProfile.hpp ${INCLUDE_DIR}/Profile.hpp ${INCLUDE_DIR}/ReadingMetrics.hpp ${INCLUDE_DIR}/CheckIn.hpp ${INCLUDE_DIR}/Comment.hpp ${PERSISTENCIA_DIR}/BancoDeDados.cpp
 	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${PERSISTENCIA_DIR}/BancoDeDados.cpp -o ${BUILD_DIR}/BancoDeDados.o
 
-${BUILD_DIR}/main_ui.o: ${INCLUDE_DIR}/Book.hpp ${INCLUDE_DIR}/BookClub.hpp ${INCLUDE_DIR}/CheckIn.hpp ${INCLUDE_DIR}/Comment.hpp ${INCLUDE_DIR}/User.hpp ${INCLUDE_DIR}/Profile.hpp ${INCLUDE_DIR}/ClubProfile.hpp ${INCLUDE_DIR}/UserProfile.hpp ${INCLUDE_DIR}/ReadingMetrics.hpp ${SRC_DIR}/main_ui.cpp
-	${CC} ${CFLAGS} -I ${INCLUDE_DIR}/ -c ${SRC_DIR}/main_ui.cpp -o ${BUILD_DIR}/main_ui.o
     
 #Compila os tests
 
@@ -142,7 +153,7 @@ NAME_EXECUTABLE = allTests
 endif
 
 
-.PHONY: test testBook testBookClub testCheckIn testComment testUser testProfile testClubProfile testUserProfile testReadingMetrics testBancoDeDados
+.PHONY: all run test testBook testBookClub testCheckIn testComment testUser testProfile testClubProfile testUserProfile testReadingMetrics testBancoDeDados
 
 test: ${SELECTED_TEST} ${CLASS_OBJS} ${BUILD_TESTS_DIR}/testMain.o
 	${CC} $^ -static -o ${BUILD_TESTS_DIR}/${NAME_EXECUTABLE}
