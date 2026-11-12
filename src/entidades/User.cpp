@@ -95,10 +95,9 @@ std::string User::getName() const {
 } //retorna o nome do usuário
 
 void User::setName(const std::string& name) {
-    if (name.empty()){
-        throw std::invalid_argument("nome faltando");
+    if (!name.empty()){
+        this->name = name;   ;
     }
-    this->name = name;
 } //altera o nome do usuário
 
 std::string User::getEmail() const {
@@ -229,6 +228,9 @@ CheckIn* User::realizarCheckIn(BookClub* club, int page, const std::string& text
     if (club == nullptr){
         throw std::invalid_argument("Ponteiro de clube do livro inválido");
     }
+    if (page < 0){
+      throw std::invalid_argument("Pagina negativa");
+    }
     if (text.empty()){
         return nullptr;
     }
@@ -250,14 +252,14 @@ CheckIn* User::realizarCheckIn(BookClub* club, int page, const std::string& text
         it = allMetrics.find(club);
     }
 
-    if (page < getCurrentPage(club)){
-        return nullptr;
-    }
-
     // O clube trocou de livro desde o último check-in: começa do zero.
     if(it->second->getReading() != livro) {
         delete it->second;
         it->second = new ReadingMetrics(livro);
+    }
+
+    if (page < getCurrentPage(club)){
+        return nullptr;
     }
 
     if(finished == true){
@@ -350,7 +352,9 @@ bool User::avaliarLeitura (BookClub* club, double grade){
             return true;
         }
     } catch (std::invalid_argument& e){
-        return false;
+      return false;
+    } catch (std::logic_error& e){
+      return false;   // leitura ainda não terminou
     }
     return false;
 }
