@@ -18,8 +18,12 @@ int User::proximoId = 1;
 User::User(const std::string& name,
              const std::string& email,
              const std::string& password,
-             int id) :
-            name(name), email(email), password(password), profile(this), id(0) {
+             int id) 
+    : name(name), email(email), password(password), profile(this), id(0) { // <--- Inicializa aqui!
+    
+    if (name.empty() || email.empty() || password.empty()) {
+        throw std::invalid_argument("Nome, Email ou Senha faltando");
+    }
     if (id < 0) {
         throw std::invalid_argument("Id do usuario nao pode ser negativo");
     }
@@ -35,6 +39,7 @@ User::User(const std::string& name,
         }
     }
 }
+            
 
              
 User::~User() {
@@ -90,6 +95,9 @@ std::string User::getName() const {
 } //retorna o nome do usuário
 
 void User::setName(const std::string& name) {
+    if (name.empty()){
+        throw std::invalid_argument("nome faltando");
+    }
     this->name = name;
 } //altera o nome do usuário
 
@@ -221,6 +229,10 @@ CheckIn* User::realizarCheckIn(BookClub* club, int page, const std::string& text
     if (club == nullptr){
         throw std::invalid_argument("Ponteiro de clube do livro inválido");
     }
+    if (text.empty()){
+        return nullptr;
+    }
+
 
     if (!this->participaDe(club)) {
         return nullptr; //usuário nao esta no clube
@@ -236,6 +248,10 @@ CheckIn* User::realizarCheckIn(BookClub* club, int page, const std::string& text
     if (it == allMetrics.end()) {
         allMetrics.insert(std::pair<BookClub*, ReadingMetrics*>(club, new ReadingMetrics(livro)));
         it = allMetrics.find(club);
+    }
+
+    if (page < getCurrentPage(club)){
+        return nullptr;
     }
 
     // O clube trocou de livro desde o último check-in: começa do zero.

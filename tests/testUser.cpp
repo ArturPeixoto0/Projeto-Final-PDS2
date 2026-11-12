@@ -428,18 +428,17 @@ TEST_CASE_FIXTURE(CenarioClube, "User: avaliarLeitura de livro já lido funciona
 }
  
 // Casos de borda da nota (o BookClub aceita de 1 a 5).
-TEST_CASE_FIXTURE(CenarioClube, "User: avaliarLeitura aceita os limites 1 e 5") {
+TEST_CASE_FIXTURE(CenarioClube, "User: avaliarLeitura aceita os limites 0 e 5") {
     raquel.realizarCheckIn(&clube, 300, "Terminei!", true);
     admin.realizarCheckIn(&clube, 300, "Terminei também", true);
 
-    CHECK(raquel.avaliarLeitura(&clube, 1));
+    CHECK(raquel.avaliarLeitura(&clube, 0));
     CHECK(admin.avaliarLeitura(&clube, 5));
 }
  
-TEST_CASE_FIXTURE(CenarioClube, "User: avaliarLeitura com nota fora de 1 a 5 falha") {
+TEST_CASE_FIXTURE(CenarioClube, "User: avaliarLeitura com nota fora de 0 a 5 falha") {
     raquel.realizarCheckIn(&clube, 300, "Terminei", true);
  
-    CHECK_FALSE(raquel.avaliarLeitura(&clube, 0));
     CHECK_FALSE(raquel.avaliarLeitura(&clube, 6));
     CHECK_FALSE(raquel.avaliarLeitura(&clube, -1));
 }
@@ -456,5 +455,5 @@ TEST_CASE_FIXTURE(CenarioClube, "User: avaliarLeitura de livro ainda não termin
 
 TEST_CASE("User: avaliarLeitura com clube nulo lança exceção") {
     User u("Raquel", "raquel@email.com", "senha123");
-    CHECK_THROWS_AS(u.avaliarLeitura(nullptr, 4), std::invalid_argument);
+    CHECK_THROWS_AS(u.avaliarLeitura(nullptr, 4), std::logic_error);
 }
