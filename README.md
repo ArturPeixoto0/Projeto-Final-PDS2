@@ -1,6 +1,6 @@
 # Projeto-Final-PDS2
 
-Integrantes:
+## Integrantes:
 | Matrícula |  Nome | 
 |-- | -- |
 | 2026046560 | Artur Peixoto Gomes da Costa | 
